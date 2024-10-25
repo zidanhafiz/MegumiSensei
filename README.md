@@ -1,37 +1,50 @@
 # Megumi Sensei
-This is the AI Assistant website for helping a many things such a Translator Japanese to Indonesia otherwise.
 
-This is project is built with:
--Next.js 15
--Tailwind
--Daisy UI
--OpenAI
+Megumi Sensei is an AI Assistant website designed to assist with various tasks, including translating between Japanese and Indonesian.
 
-## Clone the project
+## Project Overview
 
-1. Clone this repository
-```bash
-  git clone https://github.com/zidanhafiz/MegumiSensei.git
-```
+This project is built with:
 
-2. Setup `.env.local` file 
-```bash
-  OPENAI_API_KEY=your-openai-api-key
-```
+- **Next.js 15**
+- **Tailwind CSS**
+- **DaisyUI**
+- **OpenAI API**
 
-3. Install dependencies 
-```bash
-  pnpm install
-```
-or using npm
-```bash
-  npm install
-```
-4. Run in local developmet
-```bash
-  pnpm dev
-```
-or using npm
-```bash
-  npm run dev
-```
+## Getting Started
+
+### Clone the Repository
+
+1. Clone this repository:
+    ```bash
+    git clone https://github.com/zidanhafiz/MegumiSensei.git
+    ```
+
+### Set Up Environment Variables
+
+2. Create a `.env.local` file in the root directory and add your OpenAI API key:
+    ```bash
+    OPENAI_API_KEY=your-openai-api-key
+    ```
+
+### Install Dependencies
+
+3. Install the required dependencies using `pnpm`:
+    ```bash
+    pnpm install
+    ```
+   Or with `npm`:
+    ```bash
+    npm install
+    ```
+
+### Run the Project Locally
+
+4. Start the development server using `pnpm`:
+    ```bash
+    pnpm dev
+    ```
+   Or with `npm`:
+    ```bash
+    npm run dev
+    ```
