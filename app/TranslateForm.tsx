@@ -65,16 +65,23 @@ export default function TranslateForm({ language }: { language: { from: string; 
         placeholder={language.from === "Indonesia" ? idPlaceholder : jpPlaceholder}
         variant='input'
         disabled={isSubmitting}
-        className="md:col-start-1"
+        className='md:col-start-1'
         {...register("text")}
       />
-      <ErrorInputMessage message={errors.text?.message} />
-      {romaji && <Accordion title="Romaji text" content={romaji} className="md:col-start-1 md:row-start-2" />}
+      <div className='md:col-start-1 md:row-start-2'>
+        <ErrorInputMessage message={errors.text?.message} />
+        {romaji && (
+          <Accordion
+            title='Romaji text'
+            content={romaji}
+          />
+        )}
+      </div>
       <TextInput
         placeholder={language.to === "Japanese" ? jpPlaceholder : idPlaceholder}
         variant='result'
         value={result}
-        className="md:col-start-2"
+        className='md:col-start-2'
       />
       <button
         type='submit'
