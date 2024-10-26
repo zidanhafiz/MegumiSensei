@@ -12,7 +12,7 @@ export default function DrawerNavbar() {
           <CgMenuLeftAlt className='text-2xl' />
         </label>
       </div>
-      <div className='drawer-side'>
+      <div className='drawer-side z-50'>
         <label htmlFor='my-drawer' aria-label='close sidebar' className='drawer-overlay'></label>
         <ul className='menu bg-base-200 text-lg min-h-full w-80 py-8 px-4 space-y-1'>
           {menuList.map((item, index) => (
