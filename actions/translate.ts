@@ -17,34 +17,40 @@ export async function translateText(data: FormData): Promise<{ success: boolean;
 
   const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
   const prompt = `
-    Translate the following text casually, as if friends are talking. 
+    Please act as an expert translator between Japanese and Indonesian, translating text accurately in a casual, friendly tone as if two friends were speaking.
 
-    If translating from Indonesian to Japanese:
-    - Use everyday, friendly Japanese language.
-    - Provide the translation in two forms:
-      1. Japanese (using kanji/hiragana/katakana as appropriate).
-      2. Romaji (Japanese pronunciation in Latin characters).
-      The format text should be: "
-        今日は雨だね
-        Kyou wa ame da ne
-      "
+    Guidelines:
+    1. If translating from Indonesian to Japanese:
+      - Provide the translation in two forms:
+        1. Japanese (using kanji/hiragana/katakana as appropriate).
+        2. Romaji (Japanese pronunciation in Latin characters).
+      - The result format should be:
+          "今日は雨だね \nKyou wa ame da ne"
 
-    If translating from Japanese to Indonesian:
-    - Use an informal, friendly tone suitable for casual conversation.
-    - If the Japanese text is in kanji/hiragana/katakana, provide the translation in two forms:
-      1. Indonesian (using standard Latin characters).
-      2. Romaji text from Japanese.
-      The format text should be: "
-        Apa kabar?
-        Genki desu ka?
-      "
-    - Otherwise, provide the translation in Indonesian only. 
-      The format text should be in one line, Example:
-      "Apa kabar?"
+    2. If translating from Japanese to Indonesian:
+      - If the Japanese text contains kanji/hiragana/katakana, provide the translation in two forms:
+        1. Indonesian (using standard Latin characters).
+        2. Romaji version of the Japanese.
+      - The result format should be:
+          "Apa kabar? \nGenki desu ka?"
 
-    The text to translate is:
-    From: ${from}
-    To: ${to}
+      - If the Japanese text is in Latin characters, provide only the Indonesian translation in a single line. Example:
+          "Apa kabar?"
+
+    Additional Conditions:
+    - If the "From" language is Indonesian, but the content is in Japanese, return the original content. Example:
+        "cara kerja di jepang bagaimana ya?"
+
+    - If the "From" language is Japanese, but the content is in Indonesian, return the original content. Example:
+        "今日は雨だね"
+
+    **Name Handling**:
+    - Do not translate personal names or proper nouns; keep them in their original form in both languages.
+    - If unsure whether a word is a name, keep it in its original form rather than translating it.
+
+    Extra Context:
+    - Use native expressions that are suitable for informal, conversational settings. Avoid formal or robotic language. 
+    - Where appropriate, add brief cultural notes if they enhance understanding or clarify context, like slang or common phrases unique to either language.
   `;
 
   try {
@@ -60,7 +66,7 @@ export async function translateText(data: FormData): Promise<{ success: boolean;
           content: [
             {
               type: "text",
-              text: "cara kerja di jepang bagaimana ya?",
+              text: `From: Indonesian\nTo: Japanese\nContent: cara kerja di jepang bagaimana ya?`,
             },
           ],
         },
@@ -78,7 +84,7 @@ export async function translateText(data: FormData): Promise<{ success: boolean;
           content: [
             {
               type: "text",
-              text: content,
+              text: `From: ${from}\nTo: ${to}\nContent: ${content}`,
             },
           ],
         },
