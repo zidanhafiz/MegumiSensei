@@ -8,6 +8,7 @@ import ErrorInputMessage from "@/components/ErrorInputMessage";
 import { translateText } from "@/actions/translate";
 import { useState } from "react";
 import Accordion from "@/components/Accordion";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const translateSchema = z.object({
   text: z.string().min(3, { message: "Minimal 3 huruf" }).max(1000, { message: "Maksimal 1000 huruf" }),
@@ -18,9 +19,12 @@ type TranslateSchema = z.infer<typeof translateSchema>;
 const idPlaceholder = `Aku mencintaimu Megumi-san!`;
 const jpPlaceholder = `僕はメグミさんを愛してるよ！ \nBoku wa Megumi-san o aishiteru yo!`;
 
-export default function TranslateForm({ language }: { language: { from: string; to: string } }) {
+export default function TranslateForm() {
   const [result, setResult] = useState<string>("");
   const [romaji, setRomaji] = useState<string>("");
+
+  const { language } = useLanguage();
+
   const {
     register,
     handleSubmit,

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import Header from "@/components/Header";
+import LanguageProvider from "@/contexts/LanguageContext";
 
 export const metadata: Metadata = {
   title: "Megumi Sensei",
@@ -18,8 +19,10 @@ export default function RootLayout({
       lang='en'
     >
       <body className='antialiased p-6'>
-        <Header />
-        {children}
+        <LanguageProvider>
+          <Header />
+          {children}
+        </LanguageProvider>
       </body>
     </html>
   );

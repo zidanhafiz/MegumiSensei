@@ -1,7 +1,10 @@
 "use client";
 import { HiOutlineSwitchHorizontal } from "react-icons/hi";
+import { useLanguage } from "@/contexts/LanguageContext";
 
-export default function LanguageSwitch({ language, switchLanguage }: { language: { from: string; to: string }; switchLanguage: () => void }) {
+export default function LanguageSwitch() {
+  const { language, switchLanguage } = useLanguage();
+
   return (
     <button
       type="button"
