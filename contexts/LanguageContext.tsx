@@ -10,7 +10,7 @@ interface LanguageContextType {
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
 export default function LanguageProvider({ children }: { children: ReactNode }) {
-  const [language, setLanguage] = useState<{ from: string; to: string }>({ from: "Indonesia", to: "Japanese" });
+  const [language, setLanguage] = useState<{ from: string; to: string }>({ from: "Indonesian", to: "Japanese" });
 
   const switchLanguage = () => {
     setLanguage(prevLanguage => ({

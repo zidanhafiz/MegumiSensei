@@ -66,7 +66,7 @@ export default function TranslateForm() {
       onSubmit={handleSubmit(onSubmit)}
     >
       <TextInput
-        placeholder={language.from === "Indonesia" ? idPlaceholder : jpPlaceholder}
+        placeholder={language.from === "Indonesian" ? idPlaceholder : jpPlaceholder}
         variant='input'
         disabled={isSubmitting}
         className='md:col-start-1'
