@@ -25,7 +25,7 @@ export const menuList = [
   },
   {
     name: "Kanji ⇆ Hiragana",
-    href: "/kanji-hiragana",
+    href: "/kanji-converter",
     description: "Konversi antara kanji dan hiragana.",
     icon: <RiTranslate />,
   },
