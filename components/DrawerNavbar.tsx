@@ -5,7 +5,7 @@ import { menuList } from "@/utils/menuList";
 
 export default function DrawerNavbar() {
   return (
-    <div className='drawer w-fit'>
+    <nav className='drawer w-fit'>
       <input id='my-drawer' type='checkbox' className='drawer-toggle' />
       <div className='drawer-content w-fit absolute'>
         <label htmlFor='my-drawer' className='btn drawer-button'>
@@ -24,6 +24,6 @@ export default function DrawerNavbar() {
           ))}
         </ul>
       </div>
-    </div>
+    </nav>
   );
 }
