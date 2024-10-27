@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import Header from "@/components/Header";
-import LanguageProvider from "@/contexts/LanguageContext";
 import { quicksand } from "@/utils/fonts";
 
 export const metadata: Metadata = {
@@ -15,15 +14,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html
-      data-theme='bumblebee'
-      lang='en'
-    >
+    <html data-theme='bumblebee' lang='en'>
       <body className={`${quicksand.className} antialiased p-6 min-h-screen bg-gradient-to-br from-white via-white to-secondary/10`}>
-        <LanguageProvider>
-          <Header />
-          {children}
-        </LanguageProvider>
+        <Header />
+        {children}
       </body>
     </html>
   );
