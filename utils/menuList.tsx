@@ -31,7 +31,7 @@ export const menuList = [
   },
   {
     name: "Tebak Kata",
-    href: "/guess-the-word",
+    href: "/guess-words",
     description: "Tebak kata Jepang untuk belajar kata-kata.",
     icon: <FaGamepad />,
   },
