@@ -7,7 +7,7 @@ export default function CardMenu({ item }: { item: (typeof menuList)[number] }) 
     <Link
       href={item.href}
       key={item.name}
-      className='border border-primary-content hover:bg-primary transition p-4 rounded-lg flex flex-col h-full first:bg-neutral first:text-white first:hover:text-primary-content'
+      className='border border-primary-content hover:bg-primary transition p-4 rounded-lg flex flex-col h-full first:bg-neutral first:text-white first:hover:text-primary-content shadow-md'
     >
       <div>
         <h3 className='text-lg font-semibold flex items-center gap-2'>
