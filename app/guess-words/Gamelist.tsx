@@ -1,4 +1,3 @@
-import { FaGamepad } from "react-icons/fa6"
 import { TbLanguageHiragana } from "react-icons/tb";
 import { HiOutlineTranslate } from "react-icons/hi";
 import { GiPerspectiveDiceSixFacesRandom } from "react-icons/gi";

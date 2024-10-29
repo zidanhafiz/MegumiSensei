@@ -2,7 +2,6 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import z from "zod";
-import Link from "next/link";
 import { useHiraganaKatakanaGuess } from "@/contexts/HiraganaKatakanaGuessContext";
 import { generateHiraganaKatakanaGuessQuestions } from "@/actions/hiraganaKatakanaGuess";
 import { useRouter } from "next/navigation";
@@ -107,9 +106,9 @@ export default function RequirementForm() {
         </div>
       </div>
       <div className='flex gap-2 justify-end mt-7'>
-        <Link href='/guess-words' className='btn'>
+        <button type='button' onClick={() => router.push("/guess-words")} className='btn' disabled={isSubmitting}>
           Kembali
-        </Link>
+        </button>
         <button type='submit' className='btn btn-primary' disabled={isSubmitting}>
           Mulai Main
         </button>

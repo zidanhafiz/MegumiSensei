@@ -9,6 +9,7 @@ export default function StartPage() {
   const { questions } = useHiraganaKatakanaGuess();
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState<number>(0);
   const [isFinished, setIsFinished] = useState<boolean>(false);
+  const [isQuestionsExist, setIsQuestionsExist] = useState<boolean>(false);
 
   const router = useRouter();
 
@@ -20,22 +21,23 @@ export default function StartPage() {
     setCurrentQuestionIndex((prevIndex) => prevIndex + 1);
   };
 
-  if (questions.length === 0) {
-    useEffect(() => {
-      router.push("/guess-words/hiragana-katakana-guess");
-    }, [questions, router]);
-
-    return;
-  }
-
   useEffect(() => {
     if (currentQuestionIndex === questions.length - 1) {
       setIsFinished(true);
       return;
     }
 
+    if (questions.length === 0) {
+      setIsQuestionsExist(false);
+      router.push("/guess-words/hiragana-katakana-guess");
+    } else {
+      setIsQuestionsExist(true);
+    }
+
     setIsFinished(false);
-  }, [currentQuestionIndex]);
+  }, [currentQuestionIndex, questions.length, router]);
+
+  if (!isQuestionsExist) return <></>;
 
   return (
     <div className='flex flex-col items-center'>
