@@ -1,6 +1,6 @@
 import PageContainer from "@/components/PageContainer";
 import { TbLanguageHiragana } from "react-icons/tb";
-import { getAllVocabularies } from "@/utils/supabase/fetcher/server/vocabularies";
+import { getAllVocabularies } from "@/utils/supabase/fetcherApi/server/vocabularies";
 
 export default async function VocabulariesPage() {
   const vocabularies = await getAllVocabularies();

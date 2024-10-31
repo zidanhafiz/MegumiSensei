@@ -70,12 +70,41 @@ export type Database = {
         }
         Relationships: []
       }
+      vocabularies_length: {
+        Row: {
+          created_at: string
+          current_length: number
+          id: number
+          previous_length: number
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string
+          current_length: number
+          id?: number
+          previous_length: number
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string
+          current_length?: number
+          id?: number
+          previous_length?: number
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_vocabularies_length: {
+        Args: {
+          vocab_length: number
+        }
+        Returns: number
+      }
     }
     Enums: {
       [_ in never]: never

@@ -1,5 +1,5 @@
 "use client";
-import { HiraganaKatakanaGuessQuestionType } from "@/types/QuestionTypes";
+import { HiraganaKatakanaGuessQuestionType } from "@/types/questionTypes";
 import { createContext, useState, useContext, ReactNode, Dispatch, SetStateAction } from "react";
 
 interface HiraganaKatakanaGuessContextType {
