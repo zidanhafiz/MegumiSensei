@@ -1,176 +1,51 @@
 "use server";
-import OpenAI from "openai";
 import z, { ZodError } from "zod";
-import { HiraganaKatakanaGuessQuestionType } from "@/types/QuestionTypes";
+import { HiraganaKatakanaGuessQuestionType, HiraganaKatakanaGuessResultsType } from "@/types/questionTypes";
+import { getFilteredVocabularies } from "@/utils/supabase/fetcherApi/server/vocabularies";
+import { generateRandomIndexes } from "@/utils/randomIndexes";
+import { randomInt } from "crypto";
 
 const generateHiraganaKatakanaGuessQuestionsSchema = z.object({
-  language: z.enum(["both", "hiragana", "katakana"]),
-  wordCount: z.number().min(5, { message: "Jumlah kata minimal 5" }).max(30, { message: "Jumlah kata maksimal 30" }),
-  questionType: z.enum(["both", "word", "sentence"]),
+  type: z.enum(["both", "hiragana", "katakana"]),
+  limit: z.number().min(5, { message: "Jumlah kata minimal 5" }).max(30, { message: "Jumlah kata maksimal 30" }),
+  level: z.enum(["mix", "n5", "n4"]),
 });
 
-type JsonResponse = {
-  questions: HiraganaKatakanaGuessQuestionType[];
-};
-
 export async function generateHiraganaKatakanaGuessQuestions(data: FormData): Promise<{ success: boolean; data: HiraganaKatakanaGuessQuestionType[] }> {
-  const { language, wordCount, questionType } = generateHiraganaKatakanaGuessQuestionsSchema.parse({
-    language: data.get("language") as string,
-    wordCount: parseInt(data.get("wordCount") as string),
-    questionType: data.get("questionType") as string,
+  const { type, limit, level } = generateHiraganaKatakanaGuessQuestionsSchema.parse({
+    type: data.get("type") as string,
+    limit: parseInt(data.get("limit") as string),
+    level: data.get("level") as string,
   });
 
-  const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-  const prompt = `
-    You are an expert in Japanese language. 
-    Generate the multiple choice questions for guessing the Hiragana or Katakana with romaji representation
-
-    Rules:
-    1. Generate questions with the given word count.
-
-    2. You can generate questions with the following LanguageType:
-      - If the LanguageType is "hiragana", the questions are about Hiragana.
-      Example:
-      question: こんにちは (Hiragana)
-      answer: Konnichiwa
-      options: Konbanwa, Konnichiwa, Kuruma, Denwa
-
-      - If the LanguageType is "katakana", the questions are about Katakana.
-      Example:
-      question: コンニチハ (Katakana)
-      answer: Konnichiwa
-      options: Konbanwa, Konnichiwa, Kuruma, Denwa
-
-      - If the LanguageType is "both", So the questions can be either Hiragana or Katakana.
-    3. You can generate questions with the following QuestionType:
-      - If the QuestionType is "word", the questions are about words.
-      Example:
-      question: は (Hiragana)
-      answer: Ha
-      options: Ka, Ki, Ha, Ke
-
-      - If the QuestionType is "sentence", the questions are about sentences.
-      Example:
-      question: こんにちは (Hiragana)
-      answer: Konnichiwa
-      options: Konbanwa, Konnichiwa, Kuruma, Denwa
-
-      - If the QuestionType is "both", So the questions can be either word or sentence.
-
-    For each item, provide:
-    1. The question id (number)
-    2. The question (Japanese text in Hiragana or Katakana)
-    3. The answer (Romaji representation)
-    4. The options (4 options of romaji representation)
-    5. The isAnswer (boolean) set to false for default
-    6. The isCorrect (boolean | null) set to null for default
-
-    Format the response as a JSON object with the following structure:
-    {
-      "questions": [  
-        {
-          "id": "number",
-          "question": "string",
-          "answer": "string",
-          "options": ["string", "string", "string", "string"],
-          "isAnswer": "boolean",
-          "isCorrect": "boolean"
-        }
-      ]
-    }
-    
-    Example:
-    user input: Generate 3 questions with the LanguageType: hiragana and QuestionType: sentence
-
-    response:
-    {
-      "questions": [
-        {
-          "id": 1,
-          "question": "こんにちは",
-          "answer": "Konnichiwa",
-          "options": ["Konbanwa", "Konnichiwa", "Kuruma", "Denwa"],
-          "isAnswer": false,
-          "isCorrect": null
-        },
-        {
-          "id": 2,
-          "question": "ありがとう",
-          "answer": "Arigatou",
-          "options": ["Arigatou", "Konnichiwa", "Kuruma", "Denwa"],
-          "isAnswer": false,
-          "isCorrect": null
-        },
-        {
-          "id": 3,
-          "question": "おひようび",
-          "answer": "Ohiyoo",
-          "options": ["Ohiyoo", "Konnichiwa", "Kuruma", "Denwa"],
-          "isAnswer": false,
-          "isCorrect": null
-        }
-      ]
-    }
-    `;
-
   try {
-    const completion = await openai.chat.completions.create({
-      model: "gpt-4o",
-      messages: [
-        {
-          role: "system",
-          content: prompt,
-        },
-        {
-          role: "user",
-          content: `Generate ${wordCount} questions with the LanguageType: ${language} and QuestionType: ${questionType}`,
-        },
-      ],
-      temperature: 0.7,
-      max_tokens: 4096,
-      top_p: 1,
-      frequency_penalty: 0.2,
-      presence_penalty: 0.2,
-      response_format: {
-        type: "json_schema",
-        json_schema: {
-          name: "hiraganaKatakanaGuessQuestions",
-          schema: {
-            type: "object",
-            properties: {
-              questions: {
-                type: "array",
-                items: {
-                  type: "object",
-                  properties: {
-                    id: { type: "number" },
-                    question: { type: "string" },
-                    answer: { type: "string" },
-                    options: { type: "array", items: { type: "string" } },
-                    isAnswer: { type: "boolean" },
-                    isCorrect: { type: "boolean" },
-                  },
-                  required: ["id", "question", "answer", "options", "isAnswer", "isCorrect"],
-                  additionalProperties: false,
-                },
-              },
-            },
-            required: ["questions"],
-            additionalProperties: false,
-          },
-        },
-      },
+    const data = await getFilteredVocabularies({ type, level, startRange: "random" });
+
+    if (!data || data.length === 0 || data.length < limit) {
+      throw new Error("No data found");
+    }
+
+    const randomIndexes = generateRandomIndexes(limit, data.length);
+
+    const questions: HiraganaKatakanaGuessQuestionType[] = randomIndexes.map((index) => {
+      const randomOptionIndexes = generateRandomIndexes(4, data.length, index);
+      const randomOptionIndex = randomInt(0, 3);
+
+      randomOptionIndexes.splice(randomOptionIndex, 1, index);
+
+      return {
+        id: data[index].id,
+        question: data[index].word ?? "",
+        answer: data[index].romaji ?? "",
+        options: randomOptionIndexes.map((optionIndex) => data[optionIndex].romaji ?? ""),
+        isAnswer: false,
+        isCorrect: null,
+      };
     });
-
-    const response = completion.choices[0].message.content;
-
-    if (!response) throw new Error("No response from AI");
-
-    const data = JSON.parse(response) as JsonResponse;
 
     return {
       success: true,
-      data: data.questions,
+      data: questions,
     };
   } catch (error) {
     console.error(error);
@@ -187,4 +62,32 @@ export async function generateHiraganaKatakanaGuessQuestions(data: FormData): Pr
       data: [],
     };
   }
+}
+
+export async function getHiraganaKatakanaGuessResults(
+  questions: HiraganaKatakanaGuessQuestionType[]
+): Promise<{ success: boolean; data: HiraganaKatakanaGuessResultsType }> {
+  let correctAnswers = 0;
+  let wrongAnswers = 0;
+
+  questions.forEach((question) => {
+    if (question.isCorrect) correctAnswers++;
+    else wrongAnswers++;
+  });
+
+  const totalQuestions = questions.length;
+
+  const result = Math.round((correctAnswers / totalQuestions) * 100) || 0;
+
+  let message = "";
+
+  if (result === 100) message = "おめでとう！君はヒーローだね！";
+  else if (result >= 80) message = "すごい！80%以上の正解率だよ！";
+  else if (result >= 60) message = "まあまあ！60%以上の正解率だよ！";
+  else message = "残念！60%未満の正解率だよ！";
+
+  return {
+    success: true,
+    data: { correctAnswers, wrongAnswers, totalQuestions, result, message },
+  };
 }

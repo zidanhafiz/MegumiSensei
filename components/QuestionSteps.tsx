@@ -1,5 +1,5 @@
 "use client";
-import { HiraganaKatakanaGuessQuestionType } from "@/types/QuestionTypes";
+import { HiraganaKatakanaGuessQuestionType } from "@/types/questionTypes";
 
 export default function QuestionSteps({ questions }: { questions: HiraganaKatakanaGuessQuestionType[] }) {
   return (

@@ -4,6 +4,7 @@ import QuestionSteps from "@/components/QuestionSteps";
 import { useHiraganaKatakanaGuess } from "@/contexts/HiraganaKatakanaGuessContext";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
+import LoadingPage from "../../LoadingPage";
 
 export default function StartPage() {
   const { questions } = useHiraganaKatakanaGuess();
@@ -15,7 +16,7 @@ export default function StartPage() {
 
   const handleNextQuestion = () => {
     if (currentQuestionIndex === questions.length - 1) {
-      router.push("/guess-words/hiragana-katakana-guess");
+      router.push("/guess-words/hiragana-katakana-guess/finish");
       return;
     }
     setCurrentQuestionIndex((prevIndex) => prevIndex + 1);
@@ -37,14 +38,19 @@ export default function StartPage() {
     setIsFinished(false);
   }, [currentQuestionIndex, questions.length, router]);
 
-  if (!isQuestionsExist) return <></>;
+  if (!isQuestionsExist)
+    return (
+      <div className='h-[calc(100vh-28rem)] flex items-center justify-center'>
+        <LoadingPage message='Memuat soal latihan...' />
+      </div>
+    );
 
   return (
     <div className='flex flex-col items-center'>
       <div className='overflow-x-auto'>
         <QuestionSteps questions={questions} />
       </div>
-      <GuessQuestion question={questions[currentQuestionIndex]} isFinished={isFinished} handleNextQuestion={handleNextQuestion} />
+      <GuessQuestion index={currentQuestionIndex} question={questions[currentQuestionIndex]} isFinished={isFinished} handleNextQuestion={handleNextQuestion} />
     </div>
   );
 }
