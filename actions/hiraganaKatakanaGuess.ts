@@ -1,10 +1,9 @@
 "use server";
 import z, { ZodError } from "zod";
 import { HiraganaKatakanaGuessQuestionType, HiraganaKatakanaGuessResultsType } from "@/types/questionTypes";
-import { createHiraganaKatakanaGuessQuestions, getFilteredVocabularies } from "@/utils/supabase/fetcherApi/server/vocabularies";
+import { getFilteredVocabularies } from "@/utils/supabase/fetcherApi/server/vocabularies";
 import { generateRandomIndexes } from "@/utils/randomIndexes";
 import { randomInt } from "crypto";
-import { HirakataGame } from "@/types/tableTypes";
 
 const generateHiraganaKatakanaGuessQuestionsSchema = z.object({
   type: z.enum(["both", "hiragana", "katakana"]),
@@ -28,7 +27,7 @@ export async function generateHiraganaKatakanaGuessQuestions(data: FormData): Pr
 
     const randomIndexes = generateRandomIndexes(limit, data.length);
 
-    const questionsUploaded = randomIndexes.map((index) => {
+    const questions = randomIndexes.map((index) => {
       let attempts = 0;
       let options: string[];
 
@@ -47,6 +46,7 @@ export async function generateHiraganaKatakanaGuessQuestions(data: FormData): Pr
       } while (new Set(options).size !== 4);
 
       return {
+        id: data[index].id,
         question: data[index].word,
         answer: data[index].romaji,
         options,
@@ -55,8 +55,6 @@ export async function generateHiraganaKatakanaGuessQuestions(data: FormData): Pr
         user_answer: null,
       };
     });
-
-    const questions = await createHiraganaKatakanaGuessQuestions(questionsUploaded as HirakataGame[]);
 
     return {
       success: true,
