@@ -54,7 +54,7 @@ export async function generateHiraganaKatakanaGuessQuestions(data: FormData): Pr
         is_correct: null,
         user_answer: null,
       };
-    }) as HiraganaKatakanaGuessQuestionType[];
+    });
 
     return {
       success: true,
