@@ -27,7 +27,7 @@ export async function generateHiraganaKatakanaGuessQuestions(data: FormData): Pr
 
     const randomIndexes = generateRandomIndexes(limit, data.length);
 
-    const questions: HiraganaKatakanaGuessQuestionType[] = randomIndexes.map((index) => {
+    const questions = randomIndexes.map((index) => {
       let attempts = 0;
       let options: string[];
 
@@ -54,7 +54,7 @@ export async function generateHiraganaKatakanaGuessQuestions(data: FormData): Pr
         is_correct: null,
         user_answer: null,
       };
-    });
+    }) as HiraganaKatakanaGuessQuestionType[];
 
     return {
       success: true,
