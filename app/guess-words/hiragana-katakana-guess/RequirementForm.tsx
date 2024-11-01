@@ -2,14 +2,15 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import z from "zod";
-import { useHiraganaKatakanaGuess } from "@/contexts/HiraganaKatakanaGuessContext";
-import { generateHiraganaKatakanaGuessQuestions } from "@/actions/hiraganaKatakanaGuess";
 import { useRouter } from "next/navigation";
+import { RiGamepadFill } from "react-icons/ri";
+import { useHiraganaKatakanaGuess } from "@/contexts/HiraganaKatakanaGuessContext";
+import { useEffect } from "react";
 
 const RequirementFormSchema = z.object({
-  language: z.enum(["both", "hiragana", "katakana"]),
-  wordCount: z.number().min(5, { message: "Jumlah kata minimal 5" }).max(30, { message: "Jumlah kata maksimal 30" }),
-  questionType: z.enum(["both", "word", "sentence"]),
+  type: z.enum(["both", "hiragana", "katakana"]),
+  limit: z.number().min(5, { message: "Jumlah kata minimal 5" }).max(30, { message: "Jumlah kata maksimal 30" }),
+  level: z.enum(["mix", "n5", "n4"]),
 });
 
 type RequirementFormSchema = z.infer<typeof RequirementFormSchema>;
@@ -22,27 +23,26 @@ export default function RequirementForm() {
   } = useForm<RequirementFormSchema>({
     resolver: zodResolver(RequirementFormSchema),
     defaultValues: {
-      language: "both",
-      wordCount: 5,
-      questionType: "both",
+      type: "both",
+      limit: 5,
+      level: "mix",
     },
   });
 
-  const { setQuestions } = useHiraganaKatakanaGuess();
+  const { setupQuestions, setIsStarted } = useHiraganaKatakanaGuess();
+
   const router = useRouter();
 
   const onSubmit = async (data: RequirementFormSchema) => {
     if (isSubmitting) return;
-
-    const formData = new FormData();
-    Object.entries(data).forEach(([key, value]) => {
-      formData.append(key, value.toString());
-    });
-
-    const response = await generateHiraganaKatakanaGuessQuestions(formData);
-    setQuestions(response.data);
+    setupQuestions(data);
+    setIsStarted(true);
     router.push("/guess-words/hiragana-katakana-guess/start");
   };
+
+  useEffect(() => {
+    localStorage.removeItem("hirakata_game_results");
+  }, []);
 
   return (
     <form className='grid gap-6 md:gap-4' onSubmit={handleSubmit(onSubmit)}>
@@ -52,19 +52,19 @@ export default function RequirementForm() {
           <div className='form-control'>
             <label className='label cursor-pointer gap-2'>
               <span className='label-text'>Keduanya</span>
-              <input type='radio' {...register("language")} value='both' className='radio radio-info' />
+              <input type='radio' {...register("type")} value='both' className='radio radio-info' />
             </label>
           </div>
           <div className='form-control'>
             <label className='label cursor-pointer gap-2'>
               <span className='label-text'>Hiragana</span>
-              <input type='radio' {...register("language")} value='hiragana' className='radio radio-info' />
+              <input type='radio' {...register("type")} value='hiragana' className='radio radio-info' />
             </label>
           </div>
           <div className='form-control'>
             <label className='label cursor-pointer gap-2'>
               <span className='label-text'>Katakana</span>
-              <input type='radio' {...register("language")} value='katakana' className='radio radio-info' />
+              <input type='radio' {...register("type")} value='katakana' className='radio radio-info' />
             </label>
           </div>
         </div>
@@ -76,31 +76,31 @@ export default function RequirementForm() {
           className='input input-bordered input-info input-sm w-24'
           min={5}
           max={30}
-          {...register("wordCount", {
+          {...register("limit", {
             setValueAs: (value) => parseInt(value),
           })}
         />
       </div>
-      {errors.wordCount && <p className='text-error'>{errors.wordCount.message}</p>}
+      {errors.limit && <p className='text-error'>{errors.limit.message}</p>}
       <div className='flex flex-col md:flex-row md:items-center md:justify-between md:gap-20'>
-        <h4 className='font-semibold'>Tipe Pertanyaan:</h4>
+        <h4 className='font-semibold'>JLPT Level:</h4>
         <div className='flex gap-2 justify-end'>
           <div className='form-control'>
             <label className='label cursor-pointer gap-2'>
-              <span className='label-text'>Keduanya</span>
-              <input type='radio' {...register("questionType")} value='both' className='radio radio-info' />
+              <span className='label-text'>Campuran</span>
+              <input type='radio' {...register("level")} value='mix' className='radio radio-info' />
             </label>
           </div>
           <div className='form-control'>
             <label className='label cursor-pointer gap-2'>
-              <span className='label-text'>Kata</span>
-              <input type='radio' {...register("questionType")} value='word' className='radio radio-info' />
+              <span className='label-text'>N5</span>
+              <input type='radio' {...register("level")} value='n5' className='radio radio-info' />
             </label>
           </div>
           <div className='form-control'>
             <label className='label cursor-pointer gap-2'>
-              <span className='label-text'>Kalimat</span>
-              <input type='radio' {...register("questionType")} value='sentence' className='radio radio-info' />
+              <span className='label-text'>N4</span>
+              <input type='radio' {...register("level")} value='n4' className='radio radio-info' />
             </label>
           </div>
         </div>
@@ -110,6 +110,7 @@ export default function RequirementForm() {
           Kembali
         </button>
         <button type='submit' className='btn btn-primary' disabled={isSubmitting}>
+          <RiGamepadFill />
           Mulai Main
         </button>
       </div>

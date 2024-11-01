@@ -1,59 +1,32 @@
 "use client";
-import { HiraganaKatakanaGuessQuestionType } from "@/types/QuestionTypes";
+import { HiraganaKatakanaGuessQuestionType } from "@/types/questionTypes";
 import { createContext, useState, useContext, ReactNode, Dispatch, SetStateAction } from "react";
 
-interface HiraganaKatakanaGuessContextType {
-  questions: HiraganaKatakanaGuessQuestionType[];
-  setQuestions: Dispatch<SetStateAction<HiraganaKatakanaGuessQuestionType[]>>;
-  toggleAnswer: (id: number) => void;
-  checkAnswer: (id: number, answer: string) => { isCorrect: boolean; message: string };
-}
+type HiraganaKatakanaGuessContextType = {
+  questions: HiraganaKatakanaGuessQuestionType[] | null;
+  setQuestions: Dispatch<SetStateAction<HiraganaKatakanaGuessQuestionType[] | null>>;
+  setupQuestions: (questionsConfig: { type: string; limit: number; level: string }) => void;
+  questionsConfig: { type: string; limit: number; level: string } | null;
+  isStarted: boolean;
+  setIsStarted: Dispatch<SetStateAction<boolean>>;
+};
 
 const HiraganaKatakanaGuessContext = createContext<HiraganaKatakanaGuessContextType | undefined>(undefined);
 
 export default function HiraganaKatakanaGuessProvider({ children }: { children: ReactNode }) {
-  const [questions, setQuestions] = useState<HiraganaKatakanaGuessQuestionType[]>([]);
+  const [questions, setQuestions] = useState<HiraganaKatakanaGuessQuestionType[] | null>(null);
+  const [questionsConfig, setQuestionsConfig] = useState<{ type: string; limit: number; level: string } | null>(null);
+  const [isStarted, setIsStarted] = useState<boolean>(false);
 
-  const toggleAnswer = (id: number) => {
-    setQuestions((prevQuestions) => prevQuestions.map((question) => ({ ...question, isAnswer: question.id === id ? !question.isAnswer : question.isAnswer })));
-  };
-
-  const checkAnswer = (id: number, answer: string) => {
-    const question = questions.find((question) => question.id === id);
-
-    const isCorrect = question?.answer === answer;
-
-    if (isCorrect) {
-      setQuestions((prevQuestions) =>
-        prevQuestions.map((question) => ({
-          ...question,
-          isAnswer: question.id === id ? true : question.isAnswer,
-          isCorrect: question.id === id ? true : question.isCorrect,
-        }))
-      );
-
-      return {
-        isCorrect: true,
-        message: "Jawaban benar!",
-      };
-    }
-
-    setQuestions((prevQuestions) =>
-      prevQuestions.map((question) => ({
-        ...question,
-        isAnswer: question.id === id ? true : question.isAnswer,
-        isCorrect: question.id === id ? false : question.isCorrect,
-      }))
-    ); 
-
-    return {
-      isCorrect: false,
-      message: "Jawaban salah!",
-    };
+  const setupQuestions = (questionsConfig: { type: string; limit: number; level: string }) => {
+    setQuestionsConfig(questionsConfig);
+    return;
   };
 
   return (
-    <HiraganaKatakanaGuessContext.Provider value={{ questions, setQuestions, toggleAnswer, checkAnswer }}>{children}</HiraganaKatakanaGuessContext.Provider>
+    <HiraganaKatakanaGuessContext.Provider value={{ questions, setQuestions, setupQuestions, questionsConfig, isStarted, setIsStarted }}>
+      {children}
+    </HiraganaKatakanaGuessContext.Provider>
   );
 }
 

@@ -34,39 +34,132 @@ export type Database = {
   }
   public: {
     Tables: {
+      game_sessions: {
+        Row: {
+          created_at: string
+          expired_at: string
+          game_type: string
+          id: number
+          is_finished: boolean
+          is_started: boolean
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          expired_at: string
+          game_type: string
+          id?: number
+          is_finished?: boolean
+          is_started?: boolean
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          expired_at?: string
+          game_type?: string
+          id?: number
+          is_finished?: boolean
+          is_started?: boolean
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      hirakata_games: {
+        Row: {
+          answer: string
+          created_at: string
+          game_session_id: number
+          id: number
+          is_answered: boolean
+          is_correct: boolean | null
+          options: string[]
+          question: string
+          updated_at: string
+          user_answer: string | null
+        }
+        Insert: {
+          answer: string
+          created_at?: string
+          game_session_id: number
+          id?: number
+          is_answered?: boolean
+          is_correct?: boolean | null
+          options: string[]
+          question: string
+          updated_at?: string
+          user_answer?: string | null
+        }
+        Update: {
+          answer?: string
+          created_at?: string
+          game_session_id?: number
+          id?: number
+          is_answered?: boolean
+          is_correct?: boolean | null
+          options?: string[]
+          question?: string
+          updated_at?: string
+          user_answer?: string | null
+        }
+        Relationships: []
+      }
       vocabularies: {
         Row: {
-          category: string | null
+          category: string
           created_at: string
           id: number
           kanji: string | null
-          level: string[] | null
-          meaning: string | null
-          romaji: string | null
-          type: string | null
-          word: string | null
+          level: string[]
+          meaning: string
+          romaji: string
+          type: string
+          word: string
         }
         Insert: {
-          category?: string | null
+          category: string
           created_at?: string
           id?: number
           kanji?: string | null
-          level?: string[] | null
-          meaning?: string | null
-          romaji?: string | null
-          type?: string | null
-          word?: string | null
+          level: string[]
+          meaning: string
+          romaji: string
+          type: string
+          word: string
         }
         Update: {
-          category?: string | null
+          category?: string
           created_at?: string
           id?: number
           kanji?: string | null
-          level?: string[] | null
-          meaning?: string | null
-          romaji?: string | null
-          type?: string | null
-          word?: string | null
+          level?: string[]
+          meaning?: string
+          romaji?: string
+          type?: string
+          word?: string
+        }
+        Relationships: []
+      }
+      vocabularies_length: {
+        Row: {
+          created_at: string
+          current_length: number
+          id: number
+          previous_length: number
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string
+          current_length: number
+          id?: number
+          previous_length: number
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string
+          current_length?: number
+          id?: number
+          previous_length?: number
+          updated_at?: string | null
         }
         Relationships: []
       }
@@ -75,7 +168,12 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_vocabularies_length: {
+        Args: {
+          vocab_length: number
+        }
+        Returns: number
+      }
     }
     Enums: {
       [_ in never]: never
