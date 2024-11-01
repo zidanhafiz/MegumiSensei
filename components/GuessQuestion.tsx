@@ -1,46 +1,56 @@
 "use client";
 import { useHiraganaKatakanaGuess } from "@/contexts/HiraganaKatakanaGuessContext";
 import { HiraganaKatakanaGuessQuestionType } from "@/types/questionTypes";
+import Link from "next/link";
 import { useState, useEffect } from "react";
 import { FaArrowRight } from "react-icons/fa6";
 
 type GuessQuestionProps = {
   index: number;
-  question: HiraganaKatakanaGuessQuestionType;
   isFinished: boolean;
   handleNextQuestion: () => void;
 };
 
-export default function GuessQuestion({ index, question, isFinished, handleNextQuestion }: GuessQuestionProps) {
-  const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
-  const [isAnswer, setIsAnswer] = useState<boolean>(false);
+export default function GuessQuestion({ index, isFinished, handleNextQuestion }: GuessQuestionProps) {
   const [message, setMessage] = useState<string>("");
   const [currentAnswer, setCurrentAnswer] = useState<string>("");
+  const [question, setQuestion] = useState<HiraganaKatakanaGuessQuestionType | null>(null);
 
-  const { checkAnswer } = useHiraganaKatakanaGuess();
-
-  const handleCheckAnswer = (answer: string) => {
-    if (isAnswer) return;
-    setCurrentAnswer(answer);
-
-    const result = checkAnswer(question.id, answer);
-
-    setIsCorrect(result.isCorrect);
-    setMessage(result.message);
-    setIsAnswer(true);
-  };
+  const { questions, setQuestions } = useHiraganaKatakanaGuess();
 
   const nextQuestion = () => {
     setCurrentAnswer("");
-    setIsCorrect(null);
     setMessage("");
-    setIsAnswer(false);
     handleNextQuestion();
   };
 
+  const handleAnswer = (answer: string) => {
+    if (question?.is_answered) return;
+    setCurrentAnswer(answer);
+
+    let isCorrect = false;
+    if (question?.answer === answer) {
+      setMessage("Jawaban Benar!");
+      isCorrect = true;
+    } else {
+      setMessage("Jawaban Salah!");
+      isCorrect = false;
+    }
+
+    const updatedQuestion = question && { ...question, user_answer: answer, is_answered: true, is_correct: isCorrect };
+    const updatedQuestions = questions && questions.map((question) => (question.id === updatedQuestion?.id ? updatedQuestion : question));
+
+    localStorage.setItem("hirakata_game", JSON.stringify(updatedQuestions));
+
+    setQuestion(updatedQuestion);
+    setQuestions(updatedQuestions);
+  };
+
   useEffect(() => {
-    setIsAnswer(question.isAnswer);
-  }, [question]);
+    setQuestion(questions?.[index] ?? null);
+  }, [index, questions]);
+
+  if (!question) return null;
 
   return (
     <div className='w-fit mx-auto flex flex-col items-center'>
@@ -51,21 +61,30 @@ export default function GuessQuestion({ index, question, isFinished, handleNextQ
           <button
             key={option}
             value={option}
-            className={`btn btn-outline ${currentAnswer === option ? (isCorrect ? "btn-info" : "btn-error") : ""}`}
-            onClick={() => handleCheckAnswer(option)}
+            className={`btn btn-outline ${
+              currentAnswer === option ? (question.is_correct !== null ? (question.is_correct === true ? "btn-info" : "btn-error") : "") : ""
+            }`}
+            onClick={() => handleAnswer(option)}
           >
             {option}
           </button>
         ))}
       </div>
-      {isAnswer && (
+      {question.is_answered && (
         <div className='mt-8 text-center'>
           <p className='font-semibold'>{message}</p>
           <p className='italic my-4'>{question.answer}</p>
-          <button className='btn btn-accent btn-wide' onClick={nextQuestion}>
-            {isFinished ? "Lihat hasil latihan" : "Lanjut"}
-            <FaArrowRight className='text-lg' />
-          </button>
+          {isFinished ? (
+            <Link className='btn btn-accent btn-wide' href='/guess-words/hiragana-katakana-guess/finish'>
+              Lihat hasil latihan
+              <FaArrowRight className='text-lg' />
+            </Link>
+          ) : (
+            <button className='btn btn-primary btn-wide' onClick={nextQuestion}>
+              Lanjut
+              <FaArrowRight className='text-lg' />
+            </button>
+          )}
         </div>
       )}
     </div>

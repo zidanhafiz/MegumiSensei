@@ -2,10 +2,10 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import z from "zod";
-import { useHiraganaKatakanaGuess } from "@/contexts/HiraganaKatakanaGuessContext";
-import { generateHiraganaKatakanaGuessQuestions } from "@/actions/hiraganaKatakanaGuess";
 import { useRouter } from "next/navigation";
 import { RiGamepadFill } from "react-icons/ri";
+import { useHiraganaKatakanaGuess } from "@/contexts/HiraganaKatakanaGuessContext";
+import { useEffect } from "react";
 
 const RequirementFormSchema = z.object({
   type: z.enum(["both", "hiragana", "katakana"]),
@@ -29,21 +29,20 @@ export default function RequirementForm() {
     },
   });
 
-  const { setQuestions } = useHiraganaKatakanaGuess();
+  const { setupQuestions, setIsStarted } = useHiraganaKatakanaGuess();
+
   const router = useRouter();
 
   const onSubmit = async (data: RequirementFormSchema) => {
     if (isSubmitting) return;
-
-    const formData = new FormData();
-    Object.entries(data).forEach(([key, value]) => {
-      formData.append(key, value.toString());
-    });
-
-    const response = await generateHiraganaKatakanaGuessQuestions(formData);
-    setQuestions(response.data);
+    setupQuestions(data);
+    setIsStarted(true);
     router.push("/guess-words/hiragana-katakana-guess/start");
   };
+
+  useEffect(() => {
+    localStorage.removeItem("hirakata_game_results");
+  }, []);
 
   return (
     <form className='grid gap-6 md:gap-4' onSubmit={handleSubmit(onSubmit)}>
