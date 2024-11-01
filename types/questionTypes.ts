@@ -1,10 +1,11 @@
 export type HiraganaKatakanaGuessQuestionType = {
   id: number;
   question: string;
-  answer: string;
   options: string[];
-  isAnswer: boolean;
-  isCorrect?: boolean | null;
+  is_answered: boolean;
+  user_answer: string | null;
+  is_correct?: boolean | null;
+  answer?: string | null;
 };
 
 export type HiraganaKatakanaGuessResultsType = {

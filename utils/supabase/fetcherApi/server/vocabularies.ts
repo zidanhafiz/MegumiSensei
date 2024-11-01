@@ -1,4 +1,5 @@
 "use server";
+import { HirakataGame } from "@/types/tableTypes";
 import { createClient } from "@/utils/supabase/server";
 import { randomInt } from "crypto";
 
@@ -78,6 +79,34 @@ export async function getFilteredVocabularies(filterOptions: {
   if (error) {
     throw new Error(error.message);
   }
+
+  return data;
+}
+
+export async function createHiraganaKatakanaGuessQuestions(questions: HirakataGame[]) {
+  const supabase = await createClient();
+
+  const { data, error } = await supabase
+    .from("hirakata_games")
+    .insert(questions)
+    .select("id, question, options, user_answer, is_answered, answer");
+
+  if (error) throw new Error(error.message);
+
+  return data;
+}
+
+export async function updateUserAnswer(id: number, userAnswer: string, isCorrect: boolean) {
+  const supabase = await createClient();
+
+  const { data, error } = await supabase
+    .from("hirakata_games")
+    .update({ is_answered: true, user_answer: userAnswer, is_correct: isCorrect })
+    .eq("id", id)
+    .select("*")
+    .single();
+
+  if (error) throw new Error(error.message);
 
   return data;
 }

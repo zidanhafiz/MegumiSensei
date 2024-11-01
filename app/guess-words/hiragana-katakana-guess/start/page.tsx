@@ -2,43 +2,79 @@
 import GuessQuestion from "@/components/GuessQuestion";
 import QuestionSteps from "@/components/QuestionSteps";
 import { useHiraganaKatakanaGuess } from "@/contexts/HiraganaKatakanaGuessContext";
-import { useRouter } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import LoadingPage from "../../LoadingPage";
+import { generateHiraganaKatakanaGuessQuestions } from "@/actions/hiraganaKatakanaGuess";
+import { useRouter } from "next/navigation";
+import { HiraganaKatakanaGuessQuestionType } from "@/types/questionTypes";
 
 export default function StartPage() {
-  const { questions } = useHiraganaKatakanaGuess();
+  const { questions, isStarted, questionsConfig, setQuestions, setIsStarted } = useHiraganaKatakanaGuess();
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState<number>(0);
   const [isFinished, setIsFinished] = useState<boolean>(false);
-  const [isQuestionsExist, setIsQuestionsExist] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const router = useRouter();
 
   const handleNextQuestion = () => {
-    if (currentQuestionIndex === questions.length - 1) {
-      router.push("/guess-words/hiragana-katakana-guess/finish");
-      return;
-    }
+    if (!questions || currentQuestionIndex === questions.length - 1) return;
+
     setCurrentQuestionIndex((prevIndex) => prevIndex + 1);
   };
 
   useEffect(() => {
+    if (!questions) return;
+
     if (currentQuestionIndex === questions.length - 1) {
       setIsFinished(true);
+      setIsStarted(false);
+    }
+  }, [currentQuestionIndex, questions, setIsStarted]);
+
+  useEffect(() => {
+    if (!isStarted || !questionsConfig) {
+      const localQuestions = localStorage.getItem("hirakata_game");
+
+      if (localQuestions) {
+        const questions = JSON.parse(localQuestions) as HiraganaKatakanaGuessQuestionType[];
+        const index = questions.findIndex((question: HiraganaKatakanaGuessQuestionType) => !question.is_answered);
+        setQuestions(questions);
+        setCurrentQuestionIndex(index);
+        return;
+      }
+      router.push("/guess-words/hiragana-katakana-guess");
       return;
     }
 
-    if (questions.length === 0) {
-      setIsQuestionsExist(false);
-      router.push("/guess-words/hiragana-katakana-guess");
-    } else {
-      setIsQuestionsExist(true);
-    }
+    const createQuestions = async () => {
+      setIsLoading(true);
 
-    setIsFinished(false);
-  }, [currentQuestionIndex, questions.length, router]);
+      const formData = new FormData();
+      formData.append("type", questionsConfig.type);
+      formData.append("limit", questionsConfig.limit.toString());
+      formData.append("level", questionsConfig.level);
 
-  if (!isQuestionsExist)
+      const questions = await generateHiraganaKatakanaGuessQuestions(formData);
+
+      if (questions.success && questions.data.length > 0) {
+        setQuestions(questions.data);
+        localStorage.setItem("hirakata_game", JSON.stringify(questions.data));
+      } else {
+        console.error("Failed to generate questions");
+        setQuestions(null);
+        localStorage.removeItem("hirakata_game");
+        router.push("/guess-words/hiragana-katakana-guess");
+      }
+
+      localStorage.removeItem("hirakata_game_results");
+      setIsLoading(false);
+      return;
+    };
+
+    createQuestions();
+  }, [isStarted, questionsConfig, setQuestions, router]);
+
+  if (isLoading || !questions)
     return (
       <div className='h-[calc(100vh-28rem)] flex items-center justify-center'>
         <LoadingPage message='Memuat soal latihan...' />
@@ -50,7 +86,7 @@ export default function StartPage() {
       <div className='overflow-x-auto'>
         <QuestionSteps questions={questions} />
       </div>
-      <GuessQuestion index={currentQuestionIndex} question={questions[currentQuestionIndex]} isFinished={isFinished} handleNextQuestion={handleNextQuestion} />
+      <GuessQuestion index={currentQuestionIndex} isFinished={isFinished} handleNextQuestion={handleNextQuestion} />
     </div>
   );
 }

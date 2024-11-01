@@ -27,19 +27,32 @@ export async function generateHiraganaKatakanaGuessQuestions(data: FormData): Pr
 
     const randomIndexes = generateRandomIndexes(limit, data.length);
 
-    const questions: HiraganaKatakanaGuessQuestionType[] = randomIndexes.map((index) => {
-      const randomOptionIndexes = generateRandomIndexes(4, data.length, index);
-      const randomOptionIndex = randomInt(0, 3);
+    const questions = randomIndexes.map((index) => {
+      let attempts = 0;
+      let options: string[];
 
-      randomOptionIndexes.splice(randomOptionIndex, 1, index);
+      do {
+        const randomOptionIndexes = generateRandomIndexes(4, data.length, randomIndexes);
+        const randomOptionIndex = randomInt(0, 3);
+        randomOptionIndexes.splice(randomOptionIndex, 1, index);
+
+        options = randomOptionIndexes.map((optionIndex) => data[optionIndex].romaji ?? "");
+        attempts++;
+
+        // Prevent infinite loop
+        if (attempts > 10) {
+          throw new Error("Could not generate unique options");
+        }
+      } while (new Set(options).size !== 4);
 
       return {
         id: data[index].id,
-        question: data[index].word ?? "",
-        answer: data[index].romaji ?? "",
-        options: randomOptionIndexes.map((optionIndex) => data[optionIndex].romaji ?? ""),
-        isAnswer: false,
-        isCorrect: null,
+        question: data[index].word,
+        answer: data[index].romaji,
+        options,
+        is_answered: false,
+        is_correct: null,
+        user_answer: null,
       };
     });
 
@@ -71,7 +84,7 @@ export async function getHiraganaKatakanaGuessResults(
   let wrongAnswers = 0;
 
   questions.forEach((question) => {
-    if (question.isCorrect) correctAnswers++;
+    if (question.is_correct) correctAnswers++;
     else wrongAnswers++;
   });
 
