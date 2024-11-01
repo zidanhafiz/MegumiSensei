@@ -27,7 +27,7 @@ export async function generateHiraganaKatakanaGuessQuestions(data: FormData): Pr
 
     const randomIndexes = generateRandomIndexes(limit, data.length);
 
-    const questions = randomIndexes.map((index) => {
+    const questions: HiraganaKatakanaGuessQuestionType[] = randomIndexes.map((index) => {
       let attempts = 0;
       let options: string[];
 
