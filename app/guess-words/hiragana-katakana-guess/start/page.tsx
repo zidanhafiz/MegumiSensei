@@ -38,7 +38,14 @@ export default function StartPage() {
       if (localQuestions) {
         const questions = JSON.parse(localQuestions) as HiraganaKatakanaGuessQuestionType[];
         const index = questions.findIndex((question: HiraganaKatakanaGuessQuestionType) => !question.is_answered);
+
         setQuestions(questions);
+
+        if (index === -1) {
+          setCurrentQuestionIndex(questions.length - 1);
+          return;
+        }
+
         setCurrentQuestionIndex(index);
         return;
       }

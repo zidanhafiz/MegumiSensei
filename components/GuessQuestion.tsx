@@ -48,6 +48,8 @@ export default function GuessQuestion({ index, isFinished, handleNextQuestion }:
 
   useEffect(() => {
     setQuestion(questions?.[index] ?? null);
+    setCurrentAnswer(questions?.[index]?.user_answer ?? "");
+    setMessage(questions?.[index]?.is_correct ? "Jawaban Benar!" : "Jawaban Salah!");
   }, [index, questions]);
 
   if (!question) return null;
