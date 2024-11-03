@@ -68,7 +68,6 @@ export type Database = {
         Row: {
           answer: string
           created_at: string
-          game_session_id: number
           id: number
           is_answered: boolean
           is_correct: boolean | null
@@ -80,7 +79,6 @@ export type Database = {
         Insert: {
           answer: string
           created_at?: string
-          game_session_id: number
           id?: number
           is_answered?: boolean
           is_correct?: boolean | null
@@ -92,7 +90,6 @@ export type Database = {
         Update: {
           answer?: string
           created_at?: string
-          game_session_id?: number
           id?: number
           is_answered?: boolean
           is_correct?: boolean | null
@@ -100,6 +97,48 @@ export type Database = {
           question?: string
           updated_at?: string
           user_answer?: string | null
+        }
+        Relationships: []
+      }
+      users: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          credits: number
+          email: string | null
+          full_name: string | null
+          is_anonymous: boolean | null
+          is_reset: boolean
+          is_verified: boolean
+          updated_at: string | null
+          user_id: string
+          username: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          credits?: number
+          email?: string | null
+          full_name?: string | null
+          is_anonymous?: boolean | null
+          is_reset?: boolean
+          is_verified?: boolean
+          updated_at?: string | null
+          user_id?: string
+          username?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          credits?: number
+          email?: string | null
+          full_name?: string | null
+          is_anonymous?: boolean | null
+          is_reset?: boolean
+          is_verified?: boolean
+          updated_at?: string | null
+          user_id?: string
+          username?: string | null
         }
         Relationships: []
       }

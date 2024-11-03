@@ -1,18 +1,15 @@
+"use client";
 import PageContainer from "@/components/PageContainer";
 import { MdSettings } from "react-icons/md";
 import { EditForm } from "./EditForm";
-import { getUserSession } from "@/actions/authentication";
-import { redirect } from "next/navigation";
-import { getUserAvatar } from "@/actions/profile";
+import { useUser } from "@/contexts/UserContext";
 
-export default async function EditPage() {
-  const user = await getUserSession();
+export default function EditPage() {
+  const { user, getUser } = useUser();
 
   if (!user) {
-    redirect("/login");
+    return null;
   }
-
-  const avatar = await getUserAvatar(user.user_metadata.avatar_url);
 
   return (
     <PageContainer
@@ -20,7 +17,7 @@ export default async function EditPage() {
       icon={<MdSettings />}
     >
       <div className='max-w-xl mx-auto mt-6'>
-        <EditForm user={user} avatar={avatar} />
+        <EditForm user={user} getUser={getUser} />
       </div>
     </PageContainer>
   );

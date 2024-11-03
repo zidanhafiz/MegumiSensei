@@ -35,8 +35,9 @@ export const editProfileSchemaServer = z.object({
   avatar: z
     .unknown()
     .transform((file) => file as File)
-    .refine((file) => file?.size <= 5 * 1024 * 1024, `Max file size is 5MB.`)
-    .refine((file) => ["image/jpg", "image/jpeg", "image/png", "image/webp"].includes(file?.type), ".jpg, .jpeg, .png and .webp files are accepted."),
+    .refine((file) => file.size <= 5 * 1024 * 1024, `Max file size is 5MB.`)
+    .refine((file) => ["image/jpg", "image/jpeg", "image/png", "image/webp"].includes(file?.type), ".jpg, .jpeg, .png and .webp files are accepted.")
+    .nullable(),
 });
 
 export type EditProfileFormDataServer = z.infer<typeof editProfileSchemaServer>;
@@ -52,3 +53,31 @@ export const loginSchema = z.object({
 });
 
 export type LoginFormData = z.infer<typeof loginSchema>;
+
+export const forgotPasswordSchema = z.object({
+  email: z.string().email().min(5, { message: "Email must be at least 5 characters" }).max(50, { message: "Email must be at most 50 characters" }).trim(),
+});
+
+export type ForgotPasswordFormData = z.infer<typeof forgotPasswordSchema>;
+
+export const resetPasswordSchema = z
+  .object({
+    password: z
+      .string()
+      .min(8, { message: "Password must be at least 8 characters" })
+      .max(32, { message: "Password must be at most 32 characters" })
+      .trim()
+      .regex(/^[\w!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?`~]+$/, { message: "Password must contain only letters, numbers, symbols and no spaces" }),
+    confirmPassword: z
+      .string()
+      .min(1, { message: "Please confirm your password" })
+      .max(32, { message: "Password must be at most 32 characters" })
+      .trim()
+      .regex(/^[\w!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?`~]+$/, { message: "Password must contain only letters, numbers, symbols and no spaces" }),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords don't match",
+    path: ["confirmPassword"],
+  });
+
+export type ResetPasswordFormData = z.infer<typeof resetPasswordSchema>;

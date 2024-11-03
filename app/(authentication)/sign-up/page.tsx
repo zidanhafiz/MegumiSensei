@@ -13,6 +13,7 @@ import { FaCircleUser } from "react-icons/fa6";
 import { signupSchema } from "@/utils/zodSchemas";
 import { SignupFormData } from "@/utils/zodSchemas";
 import { CgRename } from "react-icons/cg";
+import { useRouter } from "next/navigation";
 
 export default function SignUpPage() {
   const {
@@ -26,6 +27,8 @@ export default function SignUpPage() {
 
   const [showPassword, setShowPassword] = useState<boolean>(false);
 
+  const router = useRouter();
+
   const onSubmit = async (data: SignupFormData) => {
     if (isSubmitting) return;
 
@@ -37,13 +40,15 @@ export default function SignUpPage() {
     formData.append("password", data.password);
     formData.append("confirmPassword", data.confirmPassword);
 
-    try {
-      await signup(formData);
-    } catch (error) {
-      console.error(error);
-      const message = (error as Error).message;
-      setError("root.serverError", { message });
+    const res = await signup(formData);
+
+    if (!res.success) {
+      console.error(res.data);
+      setError("root.serverError", { message: res.data });
+      return;
     }
+
+    router.push("/confirm");
   };
 
   return (

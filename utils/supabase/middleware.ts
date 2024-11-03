@@ -29,11 +29,15 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
+  const { data: userData } = await supabase.from("users").select("*").eq("user_id", user?.id).single();
+
   if (
     !user &&
     !request.nextUrl.pathname.startsWith("/login") &&
     !request.nextUrl.pathname.startsWith("/api/auth") &&
-    !request.nextUrl.pathname.startsWith("/sign-up")
+    !request.nextUrl.pathname.startsWith("/sign-up") &&
+    !request.nextUrl.pathname.startsWith("/confirm") &&
+    request.nextUrl.pathname !== "/forgot-password"
   ) {
     // no user, potentially respond by redirecting the user to the login page
     const url = request.nextUrl.clone();
@@ -41,13 +45,29 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  if (user?.is_anonymous && request.nextUrl.pathname.startsWith("/profile")) {
+  if (user && userData?.is_reset && request.nextUrl.pathname !== "/forgot-password/reset") {
+    const url = request.nextUrl.clone();
+    url.pathname = "/forgot-password/reset";
+    return NextResponse.redirect(url);
+  }
+
+  if (user && !userData?.is_reset && request.nextUrl.pathname.startsWith("/forgot-password")) {
     const url = request.nextUrl.clone();
     url.pathname = "/";
     return NextResponse.redirect(url);
   }
 
-  if (user && !user.is_anonymous && (request.nextUrl.pathname.startsWith("/login") || request.nextUrl.pathname.startsWith("/sign-up"))) {
+  if (user && user?.is_anonymous && request.nextUrl.pathname.startsWith("/profile")) {
+    const url = request.nextUrl.clone();
+    url.pathname = "/";
+    return NextResponse.redirect(url);
+  }
+
+  if (
+    user &&
+    !user.is_anonymous &&
+    (request.nextUrl.pathname.startsWith("/login") || request.nextUrl.pathname.startsWith("/sign-up") || request.nextUrl.pathname.startsWith("/confirm"))
+  ) {
     const url = request.nextUrl.clone();
     url.pathname = "/";
     return NextResponse.redirect(url);

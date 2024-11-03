@@ -1,47 +1,93 @@
 "use server";
 import { createClient } from "@/utils/supabase/server";
 import { editProfileSchemaServer } from "@/utils/zodSchemas";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 
-export async function updateProfile(userId: string, formData: FormData) {
+export async function updateProfile(userId: string, formData: FormData): Promise<{ success: boolean; data?: string }> {
   const { fullName, avatar } = editProfileSchemaServer.parse({
     fullName: formData.get("fullName"),
     avatar: formData.get("avatar"),
   });
 
-  const format = avatar.name.split(".").pop();
-  const pathname = `${userId}.${format}`;
-
   const supabase = await createClient();
 
-  const { data: avatarData, error: avatarError } = await supabase.storage.from("avatars").upload(pathname, avatar);
+  let newAvatar;
+  if (avatar) {
+    const format = avatar.name.split(".").pop();
+    const pathname = `${userId}.${format}`;
 
-  if (avatarError) {
-    throw new Error(avatarError.message);
+    const { data: avatarData, error: avatarError } = await supabase.storage.from("avatars").upload(pathname, avatar, {
+      upsert: true,
+    });
+
+    if (avatarError) {
+      newAvatar = "default.jpg";
+    } else {
+      newAvatar = avatarData.path;
+    }
   }
 
-  const { error: profileError } = await supabase.auth.updateUser({
-    data: {
+  const { error: profileError } = await supabase
+    .from("users")
+    .update({
       full_name: fullName,
-      avatar_url: avatarData?.path,
-    },
-  });
+      avatar_url: newAvatar,
+    })
+    .eq("user_id", userId);
 
   if (profileError) {
-    throw new Error(profileError.message);
+    return {
+      success: false,
+      data: profileError.message,
+    };
   }
 
+  revalidateTag("user");
   revalidatePath("/");
   revalidatePath("/profile");
   revalidatePath("/profile/edit");
 
-  return;
+  return {
+    success: true,
+    data: "Profile updated successfully",
+  };
 }
 
-export async function getUserAvatar(avatarUrl: string) {
+export async function deductUserCredits(userId: string, amount: number): Promise<{ success: boolean; data?: string }> {
   const supabase = await createClient();
 
-  const { data } = await supabase.storage.from("avatars").createSignedUrl(avatarUrl, 3600 * 24);
+  const { data: user, error: userError } = await supabase.from("users").select("credits").eq("user_id", userId).single();
 
-  return data?.signedUrl ?? null;
+  if (userError || !user) {
+    return {
+      success: false,
+      data: "User not found",
+    };
+  }
+
+  if (user.credits < amount || user.credits === 0) {
+    return {
+      success: false,
+      data: "Insufficient credits",
+    };
+  }
+
+  const { error: deductError } = await supabase
+    .from("users")
+    .update({
+      credits: user.credits - amount,
+    })
+    .eq("user_id", userId);
+
+  if (deductError) {
+    return {
+      success: false,
+      data: deductError.message,
+    };
+  }
+
+  return {
+    success: true,
+    data: "Credits deducted successfully",
+  };
 }
