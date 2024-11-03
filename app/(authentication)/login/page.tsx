@@ -12,6 +12,8 @@ import Link from "next/link";
 import { FaUser } from "react-icons/fa6";
 import { loginSchema } from "@/utils/zodSchemas";
 import { LoginFormData } from "@/utils/zodSchemas";
+import { useRouter } from "next/navigation";
+import { useUser } from "@/contexts/UserContext";
 
 export default function LoginPage() {
   const {
@@ -25,6 +27,9 @@ export default function LoginPage() {
 
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [isLoadingLoginAsGuest, setIsLoadingLoginAsGuest] = useState<boolean>(false);
+  const { getUser } = useUser();
+
+  const router = useRouter();
 
   const onSubmit = async (data: LoginFormData) => {
     if (isSubmitting || isLoadingLoginAsGuest) return;
@@ -33,13 +38,17 @@ export default function LoginPage() {
 
     formData.append("email", data.email);
     formData.append("password", data.password);
-    try {
-      await login(formData);
-    } catch (error) {
-      console.error(error);
-      const message = (error as Error).message;
-      setError("root.serverError", { message });
+
+    const res = await login(formData);
+
+    if (!res.success) {
+      console.error(res.data);
+      setError("root.serverError", { message: res.data });
+      return;
     }
+
+    getUser();
+    router.push("/");
   };
 
   const handleLoginAsGuest = async () => {
@@ -97,6 +106,12 @@ export default function LoginPage() {
             </button>
           </label>
           <ErrorInputMessage message={errors.password?.message} />
+          <Link
+            href='/forgot-password'
+            className='text-sm link text-gray-500 mt-2 block justify-self-end'
+          >
+            Lupa password?
+          </Link>
           <button
             type='submit'
             className='btn btn-primary w-full mt-6'
