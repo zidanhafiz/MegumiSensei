@@ -1,6 +1,13 @@
-import { User } from "@supabase/supabase-js";
+"use client";
+import { useUser } from "@/contexts/UserContext";
 
-export function AccountDetails({ user }: { user: User }) {
+export function AccountDetails() {
+  const { user } = useUser();
+
+  if (!user) {
+    return null;
+  }
+
   return (
     <>
       <DetailRow
@@ -9,11 +16,11 @@ export function AccountDetails({ user }: { user: User }) {
       />
       <DetailRow
         label='Email verified'
-        value={user.email_confirmed_at ? "Yes" : "No"}
+        value={user?.is_verified ? "Yes" : "No"}
       />
       <DetailRow
         label='Joined'
-        value={new Date(user.created_at).toLocaleString()}
+        value={new Date(user?.created_at ?? "").toLocaleString()}
       />
     </>
   );

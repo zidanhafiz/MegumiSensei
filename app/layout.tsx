@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import Header from "@/components/Header";
 import { quicksand } from "@/utils/fonts";
+import UserProvider from "@/contexts/UserContext";
 
 export const metadata: Metadata = {
   title: "Megumi Sensei",
@@ -14,10 +15,15 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html data-theme='bumblebee' lang='en'>
+    <html
+      data-theme='bumblebee'
+      lang='id'
+    >
       <body className={`${quicksand.className} antialiased p-6 min-h-screen bg-gradient-to-br from-white via-white to-secondary/10`}>
-        <Header />
-        {children}
+        <UserProvider>
+          <Header />
+          {children}
+        </UserProvider>
       </body>
     </html>
   );
