@@ -1,6 +1,7 @@
 "use server";
 import OpenAI from "openai";
 import z, { ZodError } from "zod";
+import { deductUserCredits } from "./profile";
 
 const convertKanjiSchema = z.object({
   content: z.string().min(1, { message: "Minimal 1 huruf" }).max(1000, { message: "Maksimal 1000 huruf" }),
@@ -77,6 +78,20 @@ export async function convertKanji(data: FormData): Promise<{ success: boolean; 
     });
 
     const response = completion.choices[0].message.content;
+
+    if (!response) {
+      throw new Error("No response from AI");
+    }
+
+    const credits = await deductUserCredits(1);
+
+    if (!credits.success) {
+      return {
+        success: false,
+        data: credits.data,
+      };
+    }
+
     return {
       success: true,
       data: response ?? "No response from AI",

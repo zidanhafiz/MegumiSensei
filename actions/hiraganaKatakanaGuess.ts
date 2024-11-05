@@ -4,6 +4,7 @@ import { HiraganaKatakanaGuessQuestionType, HiraganaKatakanaGuessResultsType } f
 import { getFilteredVocabularies } from "@/utils/supabase/fetcherApi/server/vocabularies";
 import { generateRandomIndexes } from "@/utils/randomIndexes";
 import { randomInt } from "crypto";
+import { deductUserCredits } from "./profile";
 
 const generateHiraganaKatakanaGuessQuestionsSchema = z.object({
   type: z.enum(["both", "hiragana", "katakana"]),
@@ -55,6 +56,15 @@ export async function generateHiraganaKatakanaGuessQuestions(data: FormData): Pr
         user_answer: null,
       };
     });
+
+    const credits = await deductUserCredits(1);
+
+    if (!credits.success) {
+      return {
+        success: false,
+        data: [],
+      };
+    }
 
     return {
       success: true,
