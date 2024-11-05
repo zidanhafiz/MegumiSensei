@@ -9,6 +9,7 @@ import { useState } from "react";
 import Accordion from "@/components/Accordion";
 import { useConverter } from "@/contexts/ConverterContext";
 import { convertKanji } from "@/actions/convertKanji";
+import { useUser } from "@/contexts/UserContext";
 
 const converterSchema = z.object({
   text: z.string().min(1, { message: "Minimal 1 huruf" }).max(1000, { message: "Maksimal 1000 huruf" }),
@@ -25,6 +26,7 @@ export default function ConverterForm() {
   const [romaji, setRomaji] = useState<string>("");
 
   const { converter } = useConverter();
+  const { getUser, user } = useUser();
 
   const {
     register,
@@ -38,6 +40,11 @@ export default function ConverterForm() {
   const onSubmit = async (data: ConverterSchema) => {
     if (isSubmitting) return;
 
+    if (user && user.credits < 1) {
+      setError("root.serverError", { message: "Credits anda habis!" });
+      return;
+    }
+
     const formData = new FormData();
     formData.append("content", data.text);
     formData.append("from", converter.from);
@@ -46,7 +53,7 @@ export default function ConverterForm() {
     const { data: content, success } = await convertKanji(formData);
 
     if (!success) {
-      setError("text", { message: data.text });
+      setError("root.serverError", { message: content });
       return;
     }
 
@@ -55,6 +62,7 @@ export default function ConverterForm() {
     if (resultText.length > 1) {
       setRomaji(resultText[1]);
       setResult(resultText[0]);
+      getUser();
       return;
     }
 
@@ -83,6 +91,9 @@ export default function ConverterForm() {
       <button type='submit' className='btn btn-primary md:col-start-2 md:row-start-2' disabled={isSubmitting}>
         {isSubmitting ? "Mengonversi..." : "Konversi"} <RiTranslate className='text-lg' />
       </button>
+      <div className='flex justify-center mt-2 md:col-start-2'>
+        <ErrorInputMessage message={errors.root?.serverError?.message} />
+      </div>
     </form>
   );
 }

@@ -55,14 +55,18 @@ export default function LoginPage() {
     if (isSubmitting || isLoadingLoginAsGuest) return;
 
     setIsLoadingLoginAsGuest(true);
-    try {
-      await loginAsGuest();
-    } catch (error) {
-      console.error(error);
-      setError("root.serverError", { message: "Failed to login as guest" });
-    } finally {
+    const res = await loginAsGuest();
+
+    if (!res.success) {
+      console.error(res.data);
+      setError("root.serverError", { message: res.data });
       setIsLoadingLoginAsGuest(false);
+      return;
     }
+
+    getUser();
+    setIsLoadingLoginAsGuest(false);
+    router.push("/");
   };
 
   return (

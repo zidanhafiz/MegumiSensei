@@ -7,12 +7,15 @@ import LoadingPage from "../../LoadingPage";
 import { generateHiraganaKatakanaGuessQuestions } from "@/actions/hiraganaKatakanaGuess";
 import { useRouter } from "next/navigation";
 import { HiraganaKatakanaGuessQuestionType } from "@/types/questionTypes";
+import { useUser } from "@/contexts/UserContext";
 
 export default function StartPage() {
   const { questions, isStarted, questionsConfig, setQuestions, setIsStarted } = useHiraganaKatakanaGuess();
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState<number>(0);
   const [isFinished, setIsFinished] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+
+  const { getUser } = useUser();
 
   const router = useRouter();
 
@@ -66,6 +69,7 @@ export default function StartPage() {
       if (questions.success && questions.data.length > 0) {
         setQuestions(questions.data);
         localStorage.setItem("hirakata_game", JSON.stringify(questions.data));
+        getUser();
       } else {
         console.error("Failed to generate questions");
         setQuestions(null);
@@ -79,7 +83,7 @@ export default function StartPage() {
     };
 
     createQuestions();
-  }, [isStarted, questionsConfig, setQuestions, router]);
+  }, [isStarted, questionsConfig, setQuestions, router, getUser]);
 
   if (isLoading || !questions)
     return (

@@ -53,10 +53,19 @@ export async function updateProfile(userId: string, formData: FormData): Promise
   };
 }
 
-export async function deductUserCredits(userId: string, amount: number): Promise<{ success: boolean; data?: string }> {
+export async function deductUserCredits(amount: number): Promise<{ success: boolean; data: string }> {
   const supabase = await createClient();
 
-  const { data: user, error: userError } = await supabase.from("users").select("credits").eq("user_id", userId).single();
+  const { data: authUser, error: authUserError } = await supabase.auth.getUser();
+
+  if (authUserError || !authUser) {
+    return {
+      success: false,
+      data: "User not found",
+    };
+  }
+
+  const { data: user, error: userError } = await supabase.from("users").select("credits").eq("user_id", authUser.user.id).single();
 
   if (userError || !user) {
     return {
@@ -68,7 +77,7 @@ export async function deductUserCredits(userId: string, amount: number): Promise
   if (user.credits < amount || user.credits === 0) {
     return {
       success: false,
-      data: "Insufficient credits",
+      data: "Credits anda habis!",
     };
   }
 
@@ -77,7 +86,7 @@ export async function deductUserCredits(userId: string, amount: number): Promise
     .update({
       credits: user.credits - amount,
     })
-    .eq("user_id", userId);
+    .eq("user_id", authUser.user.id);
 
   if (deductError) {
     return {
@@ -85,6 +94,9 @@ export async function deductUserCredits(userId: string, amount: number): Promise
       data: deductError.message,
     };
   }
+
+  revalidateTag("user");
+  revalidatePath("/");
 
   return {
     success: true,

@@ -1,5 +1,6 @@
 "use client";
 import { User } from "@/types/tableTypes";
+import { useRouter } from "next/navigation";
 import { createContext, useState, useContext, ReactNode, Dispatch, SetStateAction, useEffect, useCallback } from "react";
 
 interface UserContextType {
@@ -14,6 +15,8 @@ const UserContext = createContext<UserContextType | undefined>(undefined);
 export default function UserProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [userLoading, setUserLoading] = useState<boolean>(true);
+
+  const router = useRouter();
 
   const getUser = useCallback(async () => {
     setUserLoading(true);
@@ -33,11 +36,12 @@ export default function UserProvider({ children }: { children: ReactNode }) {
 
       setUser(data);
       setUserLoading(false);
+      router.refresh();
     } catch (error) {
       console.error(error);
       setUserLoading(false);
     }
-  }, []);
+  }, [router]);
 
   useEffect(() => {
     getUser();

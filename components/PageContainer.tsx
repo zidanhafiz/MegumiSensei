@@ -1,6 +1,7 @@
 import { ReactNode } from "react";
 import Heading from "./Heading";
 import BackButton from "./BackButton";
+import CreditsRemaining from "./CreditsRemaining";
 
 export default function PageContainer({ children, title, icon }: { children: ReactNode; title: string; icon: ReactNode }) {
   return (
@@ -11,6 +12,7 @@ export default function PageContainer({ children, title, icon }: { children: Rea
           {icon} {title}
         </Heading>
         <hr />
+        <CreditsRemaining />
         {children}
       </main>
     </div>
