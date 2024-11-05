@@ -77,4 +77,6 @@ export default function UserDropdown() {
       </div>
     );
   }
+
+  return <div className='skeleton p-2 h-10 w-10 rounded-full'></div>;
 }
