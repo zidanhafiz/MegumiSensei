@@ -50,6 +50,7 @@ export async function signup(formData: FormData): Promise<{ success: boolean; da
         username: data.username,
         full_name: data.fullName,
         avatar_url: "default.jpg",
+        credits: 100,
       },
     },
   });
@@ -89,6 +90,7 @@ export async function loginAsGuest(): Promise<{ success: boolean; data: string }
     options: {
       data: {
         full_name: "Guest",
+        credits: 10,
       },
     },
   });
@@ -162,7 +164,7 @@ export async function resetPassword(formData: FormData): Promise<{ success: bool
 
   const { data, error } = await supabase.auth.updateUser({
     password,
-  })
+  });
 
   if (error || !data) {
     console.error(error);

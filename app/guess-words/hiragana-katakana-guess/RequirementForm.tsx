@@ -6,6 +6,8 @@ import { useRouter } from "next/navigation";
 import { RiGamepadFill } from "react-icons/ri";
 import { useHiraganaKatakanaGuess } from "@/contexts/HiraganaKatakanaGuessContext";
 import { useEffect } from "react";
+import { useUser } from "@/contexts/UserContext";
+import ErrorInputMessage from "@/components/ErrorInputMessage";
 
 const RequirementFormSchema = z.object({
   type: z.enum(["both", "hiragana", "katakana"]),
@@ -19,6 +21,7 @@ export default function RequirementForm() {
   const {
     register,
     handleSubmit,
+    setError,
     formState: { errors, isSubmitting },
   } = useForm<RequirementFormSchema>({
     resolver: zodResolver(RequirementFormSchema),
@@ -30,11 +33,18 @@ export default function RequirementForm() {
   });
 
   const { setupQuestions, setIsStarted } = useHiraganaKatakanaGuess();
+  const { user } = useUser();
 
   const router = useRouter();
 
   const onSubmit = async (data: RequirementFormSchema) => {
     if (isSubmitting) return;
+
+    if (user && user.credits < 1) {
+      setError("root.serverError", { message: "Credits anda habis!" });
+      return;
+    }
+
     setupQuestions(data);
     setIsStarted(true);
     router.push("/guess-words/hiragana-katakana-guess/start");
@@ -45,26 +55,44 @@ export default function RequirementForm() {
   }, []);
 
   return (
-    <form className='grid gap-6 md:gap-4' onSubmit={handleSubmit(onSubmit)}>
+    <form
+      className='grid gap-6 md:gap-4'
+      onSubmit={handleSubmit(onSubmit)}
+    >
       <div className='flex flex-col md:flex-row md:items-center md:justify-between md:gap-20'>
         <h4 className='font-semibold'>Pilih Bahasa:</h4>
         <div className='flex gap-2 justify-end'>
           <div className='form-control'>
             <label className='label cursor-pointer gap-2'>
               <span className='label-text'>Keduanya</span>
-              <input type='radio' {...register("type")} value='both' className='radio radio-info' />
+              <input
+                type='radio'
+                {...register("type")}
+                value='both'
+                className='radio radio-info'
+              />
             </label>
           </div>
           <div className='form-control'>
             <label className='label cursor-pointer gap-2'>
               <span className='label-text'>Hiragana</span>
-              <input type='radio' {...register("type")} value='hiragana' className='radio radio-info' />
+              <input
+                type='radio'
+                {...register("type")}
+                value='hiragana'
+                className='radio radio-info'
+              />
             </label>
           </div>
           <div className='form-control'>
             <label className='label cursor-pointer gap-2'>
               <span className='label-text'>Katakana</span>
-              <input type='radio' {...register("type")} value='katakana' className='radio radio-info' />
+              <input
+                type='radio'
+                {...register("type")}
+                value='katakana'
+                className='radio radio-info'
+              />
             </label>
           </div>
         </div>
@@ -81,38 +109,65 @@ export default function RequirementForm() {
           })}
         />
       </div>
-      {errors.limit && <p className='text-error'>{errors.limit.message}</p>}
+      <ErrorInputMessage message={errors.limit?.message} />
       <div className='flex flex-col md:flex-row md:items-center md:justify-between md:gap-20'>
         <h4 className='font-semibold'>JLPT Level:</h4>
         <div className='flex gap-2 justify-end'>
           <div className='form-control'>
             <label className='label cursor-pointer gap-2'>
               <span className='label-text'>Campuran</span>
-              <input type='radio' {...register("level")} value='mix' className='radio radio-info' />
+              <input
+                type='radio'
+                {...register("level")}
+                value='mix'
+                className='radio radio-info'
+              />
             </label>
           </div>
           <div className='form-control'>
             <label className='label cursor-pointer gap-2'>
               <span className='label-text'>N5</span>
-              <input type='radio' {...register("level")} value='n5' className='radio radio-info' />
+              <input
+                type='radio'
+                {...register("level")}
+                value='n5'
+                className='radio radio-info'
+              />
             </label>
           </div>
           <div className='form-control'>
             <label className='label cursor-pointer gap-2'>
               <span className='label-text'>N4</span>
-              <input type='radio' {...register("level")} value='n4' className='radio radio-info' />
+              <input
+                type='radio'
+                {...register("level")}
+                value='n4'
+                className='radio radio-info'
+              />
             </label>
           </div>
         </div>
       </div>
       <div className='flex gap-2 justify-end mt-7'>
-        <button type='button' onClick={() => router.push("/guess-words")} className='btn' disabled={isSubmitting}>
+        <button
+          type='button'
+          onClick={() => router.push("/guess-words")}
+          className='btn'
+          disabled={isSubmitting}
+        >
           Kembali
         </button>
-        <button type='submit' className='btn btn-primary' disabled={isSubmitting}>
+        <button
+          type='submit'
+          className='btn btn-primary'
+          disabled={isSubmitting}
+        >
           <RiGamepadFill />
           Mulai Main
         </button>
+      </div>
+      <div className='flex justify-center mt-2'>
+        <ErrorInputMessage message={errors.root?.serverError?.message} />
       </div>
     </form>
   );

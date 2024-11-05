@@ -8,7 +8,6 @@ import { updateProfile } from "@/actions/profile";
 import z from "zod";
 import { FaUserCircle } from "react-icons/fa";
 import { User } from "@/types/tableTypes";
-import { useRouter } from "next/navigation";
 
 export const editProfileSchema = z.object({
   fullName: z.string().min(3, { message: "Full name must be at least 3 characters" }).max(32, { message: "Full name must be at most 32 characters" }).trim(),
@@ -39,8 +38,6 @@ export function EditForm({ user, getUser }: { user: User; getUser: () => void })
     },
   });
 
-  const router = useRouter();
-
   const onSubmit = handleSubmit(async (data) => {
     try {
       const formData = new FormData();
@@ -58,7 +55,6 @@ export function EditForm({ user, getUser }: { user: User; getUser: () => void })
       }
 
       getUser();
-      router.refresh();
     } catch (error) {
       console.error(error);
       setError("root.serverError", { message: "Something went wrong" });

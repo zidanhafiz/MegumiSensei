@@ -9,6 +9,7 @@ import { translateText } from "@/actions/translate";
 import { useState } from "react";
 import Accordion from "@/components/Accordion";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useUser } from "@/contexts/UserContext";
 
 const translateSchema = z.object({
   text: z.string().min(3, { message: "Minimal 3 huruf" }).max(1000, { message: "Maksimal 1000 huruf" }),
@@ -24,6 +25,7 @@ export default function TranslateForm() {
   const [romaji, setRomaji] = useState<string>("");
 
   const { language } = useLanguage();
+  const { getUser, user } = useUser();
 
   const {
     register,
@@ -37,6 +39,11 @@ export default function TranslateForm() {
   const onSubmit = async (data: TranslateSchema) => {
     if (isSubmitting) return;
 
+    if (user && user.credits < 1) {
+      setError("root.serverError", { message: "Credits anda habis!" });
+      return;
+    }
+
     const formData = new FormData();
     formData.append("content", data.text);
     formData.append("from", language.from);
@@ -45,7 +52,7 @@ export default function TranslateForm() {
     const { data: content, success } = await translateText(formData);
 
     if (!success) {
-      setError("text", { message: data.text });
+        setError("root.serverError", { message: content });
       return;
     }
 
@@ -54,12 +61,13 @@ export default function TranslateForm() {
     if (resultText.length > 1) {
       setRomaji(resultText[1]);
       setResult(resultText[0]);
+      getUser();
       return;
     }
 
     setResult(content);
   };
-
+  
   return (
     <form
       className='grid gap-2 md:grid-cols-2'
@@ -94,6 +102,9 @@ export default function TranslateForm() {
       >
         {isSubmitting ? "Menerjemahkan..." : "Terjemahkan"} <BsTranslate />
       </button>
+      <div className='flex justify-center mt-2 md:col-start-2'>
+        <ErrorInputMessage message={errors.root?.serverError?.message} />
+      </div>
     </form>
   );
 }
