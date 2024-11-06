@@ -8,7 +8,7 @@ export default function CreditsRemaining() {
 
   if (
     pathname === "/login" ||
-    pathname === "/signup" ||
+    pathname === "/sign-up" ||
     pathname === "/confirm" ||
     pathname.startsWith("/forgot-password") ||
     pathname.startsWith("/alphabet-cards") ||
