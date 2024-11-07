@@ -6,21 +6,19 @@ import { generateRandomIndexes } from "@/utils/randomIndexes";
 import { randomInt } from "crypto";
 import { deductUserCredits } from "./profile";
 
-const generateHiraganaKatakanaGuessQuestionsSchema = z.object({
-  type: z.enum(["both", "hiragana", "katakana"]),
+const generateKanjiGuessQuestionsSchema = z.object({
   limit: z.number().min(5, { message: "Jumlah kata minimal 5" }).max(30, { message: "Jumlah kata maksimal 30" }),
   level: z.enum(["mix", "n5", "n4"]),
 });
 
-export async function generateHiraganaKatakanaGuessQuestions(data: FormData): Promise<{ success: boolean; data: GuessQuestionType[] }> {
-  const { type, limit, level } = generateHiraganaKatakanaGuessQuestionsSchema.parse({
-    type: data.get("type") as string,
+export async function generateKanjiGuessQuestions(data: FormData): Promise<{ success: boolean; data: GuessQuestionType[] }> {
+  const { limit, level } = generateKanjiGuessQuestionsSchema.parse({
     limit: parseInt(data.get("limit") as string),
     level: data.get("level") as string,
   });
 
   try {
-    const data = await getFilteredVocabularies({ type, level, startRange: "random", kanji: "mix" });
+    const data = await getFilteredVocabularies({ type: "hiragana", level, startRange: "random", kanji: "include" });
 
     if (!data || data.length === 0 || data.length < limit) {
       throw new Error("No data found");
@@ -37,7 +35,7 @@ export async function generateHiraganaKatakanaGuessQuestions(data: FormData): Pr
         const randomOptionIndex = randomInt(0, 3);
         randomOptionIndexes.splice(randomOptionIndex, 1, index);
 
-        options = randomOptionIndexes.map((optionIndex) => data[optionIndex].romaji ?? "");
+        options = randomOptionIndexes.map((optionIndex) => data[optionIndex].word ?? "");
         attempts++;
 
         // Prevent infinite loop
@@ -48,8 +46,8 @@ export async function generateHiraganaKatakanaGuessQuestions(data: FormData): Pr
 
       return {
         id: data[index].id,
-        question: data[index].word,
-        answer: data[index].romaji,
+        question: data[index].kanji,
+        answer: data[index].word,
         options,
         is_answered: false,
         is_correct: null,
@@ -69,7 +67,7 @@ export async function generateHiraganaKatakanaGuessQuestions(data: FormData): Pr
 
     return {
       success: true,
-      data: questions,
+      data: questions as GuessQuestionType[],
     };
   } catch (error) {
     console.error(error);
@@ -88,7 +86,7 @@ export async function generateHiraganaKatakanaGuessQuestions(data: FormData): Pr
   }
 }
 
-export async function getHiraganaKatakanaGuessResults(questions: GuessQuestionType[]): Promise<{ success: boolean; data: GuessResultsType }> {
+export async function getKanjiGuessResults(questions: GuessQuestionType[]): Promise<{ success: boolean; data: GuessResultsType }> {
   let correctAnswers = 0;
   let wrongAnswers = 0;
 

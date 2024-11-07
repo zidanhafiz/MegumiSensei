@@ -1,13 +1,13 @@
 "use client";
 import GuessQuestion from "@/components/GuessQuestion";
 import QuestionSteps from "@/components/QuestionSteps";
-import { useGuessWords } from "@/contexts/GuessWordsProvider";
 import { useEffect, useState } from "react";
 import LoadingPage from "../../LoadingPage";
-import { generateHiraganaKatakanaGuessQuestions } from "@/actions/hiraganaKatakanaGuess";
 import { useRouter } from "next/navigation";
 import { GuessQuestionType } from "@/types/questionTypes";
 import { useUser } from "@/contexts/UserContext";
+import { generateKanjiGuessQuestions } from "@/actions/kanjiGuess";
+import { useGuessWords } from "@/contexts/GuessWordsProvider";
 
 export default function StartPage() {
   const { questions, isStarted, questionsConfig, setQuestions, setIsStarted } = useGuessWords();
@@ -52,24 +52,18 @@ export default function StartPage() {
         setCurrentQuestionIndex(index);
         return;
       }
-      router.push("/guess-words/hiragana-katakana-guess");
+      router.push("/guess-words/kanji-guess");
       return;
     }
 
     const createQuestions = async () => {
-      if (!questionsConfig) {
-        router.push("/guess-words/hiragana-katakana-guess");
-        return;
-      }
-
       setIsLoading(true);
 
       const formData = new FormData();
-      formData.append("type", questionsConfig.type || "both");
       formData.append("limit", questionsConfig.limit?.toString() || "5");
       formData.append("level", questionsConfig.level || "mix");
 
-      const questions = await generateHiraganaKatakanaGuessQuestions(formData);
+      const questions = await generateKanjiGuessQuestions(formData);
 
       if (questions.success && questions.data.length > 0) {
         setQuestions(questions.data);
@@ -79,7 +73,7 @@ export default function StartPage() {
         console.error("Failed to generate questions");
         setQuestions(null);
         localStorage.removeItem("guess_words_game");
-        router.push("/guess-words/hiragana-katakana-guess");
+        router.push("/guess-words/kanji-guess");
       }
 
       localStorage.removeItem("guess_words_results");
@@ -106,7 +100,7 @@ export default function StartPage() {
         index={currentQuestionIndex}
         isFinished={isFinished}
         handleNextQuestion={handleNextQuestion}
-        gameType='hiragana-katakana'
+        gameType='kanji'
       />
     </div>
   );
