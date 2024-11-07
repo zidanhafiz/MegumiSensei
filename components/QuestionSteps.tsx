@@ -1,7 +1,7 @@
 "use client";
-import { HiraganaKatakanaGuessQuestionType } from "@/types/questionTypes";
+import { GuessQuestionType } from "@/types/questionTypes";
 
-export default function QuestionSteps({ questions }: { questions: HiraganaKatakanaGuessQuestionType[] }) {
+export default function QuestionSteps({ questions }: { questions: GuessQuestionType[] }) {
   return (
     <ul className='steps mx-auto mb-8 flex flex-wrap justify-center'>
       {questions.map((question) => (

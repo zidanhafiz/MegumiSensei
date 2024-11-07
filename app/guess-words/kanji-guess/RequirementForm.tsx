@@ -10,7 +10,6 @@ import { useUser } from "@/contexts/UserContext";
 import ErrorInputMessage from "@/components/ErrorInputMessage";
 
 const RequirementFormSchema = z.object({
-  type: z.enum(["both", "hiragana", "katakana"]),
   limit: z.number().min(5, { message: "Jumlah kata minimal 5" }).max(30, { message: "Jumlah kata maksimal 30" }),
   level: z.enum(["mix", "n5", "n4"]),
 });
@@ -26,7 +25,6 @@ export default function RequirementForm() {
   } = useForm<RequirementFormSchema>({
     resolver: zodResolver(RequirementFormSchema),
     defaultValues: {
-      type: "both",
       limit: 5,
       level: "mix",
     },
@@ -47,7 +45,7 @@ export default function RequirementForm() {
 
     setupQuestions(data);
     setIsStarted(true);
-    router.push("/guess-words/hiragana-katakana-guess/start");
+    router.push("/guess-words/kanji-guess/start");
   };
 
   useEffect(() => {
@@ -59,44 +57,6 @@ export default function RequirementForm() {
       className='grid gap-6 md:gap-4'
       onSubmit={handleSubmit(onSubmit)}
     >
-      <div className='flex flex-col md:flex-row md:items-center md:justify-between md:gap-20'>
-        <h4 className='font-semibold'>Pilih Bahasa:</h4>
-        <div className='flex gap-2 justify-end'>
-          <div className='form-control'>
-            <label className='label cursor-pointer gap-2'>
-              <span className='label-text'>Keduanya</span>
-              <input
-                type='radio'
-                {...register("type")}
-                value='both'
-                className='radio radio-info'
-              />
-            </label>
-          </div>
-          <div className='form-control'>
-            <label className='label cursor-pointer gap-2'>
-              <span className='label-text'>Hiragana</span>
-              <input
-                type='radio'
-                {...register("type")}
-                value='hiragana'
-                className='radio radio-info'
-              />
-            </label>
-          </div>
-          <div className='form-control'>
-            <label className='label cursor-pointer gap-2'>
-              <span className='label-text'>Katakana</span>
-              <input
-                type='radio'
-                {...register("type")}
-                value='katakana'
-                className='radio radio-info'
-              />
-            </label>
-          </div>
-        </div>
-      </div>
       <div className='flex items-center justify-between'>
         <h4 className='font-semibold'>Jumlah Kata:</h4>
         <input

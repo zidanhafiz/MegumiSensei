@@ -4,11 +4,11 @@ import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import FinishMockup from "../../FinishMockup";
 import { GuessResultsType } from "@/types/questionTypes";
-import { getHiraganaKatakanaGuessResults } from "@/actions/hiraganaKatakanaGuess";
+import { getKanjiGuessResults } from "@/actions/kanjiGuess";
 import LoadingPage from "../../LoadingPage";
 
 export default function FinishPage() {
-  const { questions, setGameType } = useGuessWords();
+  const { questions } = useGuessWords();
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [results, setResults] = useState<GuessResultsType | null>(null);
 
@@ -25,20 +25,19 @@ export default function FinishPage() {
       return;
     } else if (!localResults && questions) {
       const getResults = async () => {
-        const results = await getHiraganaKatakanaGuessResults(questions);
+        const results = await getKanjiGuessResults(questions);
         setResults(results.data);
         setIsLoading(false);
         localStorage.setItem("guess_words_results", JSON.stringify(results.data));
       };
 
       getResults();
-      setGameType(null);
       localStorage.removeItem("guess_words_game");
     } else {
-      router.push("/guess-words/hiragana-katakana-guess");
+      router.push("/guess-words/kanji-guess");
       return;
     }
-  }, [questions, router, setGameType]);
+  }, [questions, router]);
 
   if (isLoading || !results) {
     return (

@@ -1,6 +1,7 @@
 "use client";
-import { useHiraganaKatakanaGuess } from "@/contexts/HiraganaKatakanaGuessContext";
-import { HiraganaKatakanaGuessQuestionType } from "@/types/questionTypes";
+import { useGuessWords } from "@/contexts/GuessWordsProvider";
+import { GuessQuestionType } from "@/types/questionTypes";
+import { notoSans } from "@/utils/fonts";
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { FaArrowRight } from "react-icons/fa6";
@@ -9,14 +10,15 @@ type GuessQuestionProps = {
   index: number;
   isFinished: boolean;
   handleNextQuestion: () => void;
+  gameType: string | null;
 };
 
-export default function GuessQuestion({ index, isFinished, handleNextQuestion }: GuessQuestionProps) {
+export default function GuessQuestion({ index, isFinished, handleNextQuestion, gameType }: GuessQuestionProps) {
   const [message, setMessage] = useState<string>("");
   const [currentAnswer, setCurrentAnswer] = useState<string>("");
-  const [question, setQuestion] = useState<HiraganaKatakanaGuessQuestionType | null>(null);
+  const [question, setQuestion] = useState<GuessQuestionType | null>(null);
 
-  const { questions, setQuestions } = useHiraganaKatakanaGuess();
+  const { questions, setQuestions } = useGuessWords();
 
   const nextQuestion = () => {
     setCurrentAnswer("");
@@ -40,7 +42,7 @@ export default function GuessQuestion({ index, isFinished, handleNextQuestion }:
     const updatedQuestion = question && { ...question, user_answer: answer, is_answered: true, is_correct: isCorrect };
     const updatedQuestions = questions && questions.map((question) => (question.id === updatedQuestion?.id ? updatedQuestion : question));
 
-    localStorage.setItem("hirakata_game", JSON.stringify(updatedQuestions));
+    localStorage.setItem("guess_words_game", JSON.stringify(updatedQuestions));
 
     setQuestion(updatedQuestion);
     setQuestions(updatedQuestions);
@@ -65,7 +67,7 @@ export default function GuessQuestion({ index, isFinished, handleNextQuestion }:
             value={option}
             className={`btn btn-outline ${
               currentAnswer === option ? (question.is_correct !== null ? (question.is_correct === true ? "btn-info" : "btn-error") : "") : ""
-            }`}
+            } ${notoSans.className} text-lg`}
             onClick={() => handleAnswer(option)}
           >
             {option}
@@ -75,14 +77,22 @@ export default function GuessQuestion({ index, isFinished, handleNextQuestion }:
       {question.is_answered && (
         <div className='mt-8 text-center'>
           <p className='font-semibold'>{message}</p>
-          <p className='italic my-4'>{question.answer}</p>
+          <p className='italic mt-4'>{question.answer}</p>
+          <hr className='my-2' />
+          <p className='italic mb-4'>{question.translation}</p>
           {isFinished ? (
-            <Link className='btn btn-accent btn-wide' href='/guess-words/hiragana-katakana-guess/finish'>
+            <Link
+              className='btn btn-accent btn-wide'
+              href={`/guess-words/${gameType}-guess/finish`}
+            >
               Lihat hasil latihan
               <FaArrowRight className='text-lg' />
             </Link>
           ) : (
-            <button className='btn btn-primary btn-wide' onClick={nextQuestion}>
+            <button
+              className='btn btn-primary btn-wide'
+              onClick={nextQuestion}
+            >
               Lanjut
               <FaArrowRight className='text-lg' />
             </button>

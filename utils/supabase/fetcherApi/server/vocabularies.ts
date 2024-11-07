@@ -42,6 +42,7 @@ export async function getFilteredVocabularies(filterOptions: {
   type: "both" | "hiragana" | "katakana";
   level: "mix" | "n5" | "n4";
   startRange: "random" | number;
+  kanji: "mix" | "include" | "exclude";
 }) {
   const supabase = await createClient();
 
@@ -68,13 +69,19 @@ export async function getFilteredVocabularies(filterOptions: {
     return data;
   }
 
-  const { data, error } = await supabase
-    .from("vocabularies")
-    .select("*")
-    .in("type", typeValue)
-    .not("level", "cd", `{${levelValue}}`)
-    .range(startRange, vocabulariesLength - 1)
-    .limit(60);
+  let query = supabase.from("vocabularies").select("*");
+
+  query = query.in("type", typeValue);
+  query = query.not("level", "cd", `{${levelValue}}`);
+  query = query.range(startRange, vocabulariesLength - 1);
+
+  if (filterOptions.kanji === "include") {
+    query = query.not("kanji", "is", null);
+  } else if (filterOptions.kanji === "exclude") {
+    query = query.is("kanji", null);
+  }
+
+  const { data, error } = await query.limit(60);
 
   if (error) {
     throw new Error(error.message);
@@ -86,10 +93,7 @@ export async function getFilteredVocabularies(filterOptions: {
 export async function createHiraganaKatakanaGuessQuestions(questions: HirakataGame[]) {
   const supabase = await createClient();
 
-  const { data, error } = await supabase
-    .from("hirakata_games")
-    .insert(questions)
-    .select("id, question, options, user_answer, is_answered, answer");
+  const { data, error } = await supabase.from("hirakata_games").insert(questions).select("id, question, options, user_answer, is_answered, answer");
 
   if (error) throw new Error(error.message);
 
