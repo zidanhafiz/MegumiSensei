@@ -5,7 +5,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import z from "zod";
 import ErrorInputMessage from "@/components/ErrorInputMessage";
-import { useState } from "react";
+import { KeyboardEvent, useState } from "react";
 import Accordion from "@/components/Accordion";
 import { useConverter } from "@/contexts/ConverterContext";
 import { convertKanji } from "@/actions/convertKanji";
@@ -69,18 +69,33 @@ export default function ConverterForm() {
     setResult(content);
   };
 
+  const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.ctrlKey && e.key === "Enter") {
+      handleSubmit(onSubmit)();
+    }
+  };
+
   return (
-    <form className='grid gap-2 md:grid-cols-2' onSubmit={handleSubmit(onSubmit)}>
+    <form
+      className='grid gap-2 md:grid-cols-2'
+      onSubmit={handleSubmit(onSubmit)}
+    >
       <TextInput
         placeholder={converter.from === "Kanji" ? kanjiPlaceholder : hiraganaPlaceholder}
         variant='input'
         disabled={isSubmitting}
         className='md:col-start-1'
+        onKeyDown={handleKeyDown}
         {...register("text")}
       />
       <div className='md:col-start-1 md:row-start-2'>
         <ErrorInputMessage message={errors.text?.message} />
-        {romaji && <Accordion title='Romaji text' content={romaji} />}
+        {romaji && (
+          <Accordion
+            title='Romaji text'
+            content={romaji}
+          />
+        )}
       </div>
       <TextInput
         placeholder={converter.to === "Hiragana" ? hiraganaPlaceholder : kanjiPlaceholder}
@@ -88,9 +103,19 @@ export default function ConverterForm() {
         value={result}
         className='md:col-start-2'
       />
-      <button type='submit' className='btn btn-primary md:col-start-2 md:row-start-2' disabled={isSubmitting}>
-        {isSubmitting ? "Mengonversi..." : "Konversi"} <RiTranslate className='text-lg' />
-      </button>
+      <div className='md:col-start-2 md:row-start-2 w-full'>
+        <button
+          type='submit'
+          className='btn btn-primary w-full'
+          disabled={isSubmitting}
+        >
+          {isSubmitting ? "Mengonversi..." : "Konversi"} <RiTranslate className='text-lg' />
+        </button>
+        <div className='flex justify-center mt-4 gap-2'>
+          <p className='text-sm text-gray-500'>Atau tekan</p>
+          <kbd className='kbd kbd-sm w-fit'>Ctrl + Enter</kbd>
+        </div>
+      </div>
       <div className='flex justify-center mt-2 md:col-start-2'>
         <ErrorInputMessage message={errors.root?.serverError?.message} />
       </div>
