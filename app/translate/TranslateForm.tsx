@@ -6,7 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import z from "zod";
 import ErrorInputMessage from "@/components/ErrorInputMessage";
 import { translateText } from "@/actions/translate";
-import { useState } from "react";
+import { KeyboardEvent, useState } from "react";
 import Accordion from "@/components/Accordion";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useUser } from "@/contexts/UserContext";
@@ -52,7 +52,7 @@ export default function TranslateForm() {
     const { data: content, success } = await translateText(formData);
 
     if (!success) {
-        setError("root.serverError", { message: content });
+      setError("root.serverError", { message: content });
       return;
     }
 
@@ -67,7 +67,14 @@ export default function TranslateForm() {
 
     setResult(content);
   };
-  
+
+  const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.ctrlKey && e.key === "Enter") {
+      handleSubmit(onSubmit)();
+    }
+    return;
+  };
+
   return (
     <form
       className='grid gap-2 md:grid-cols-2'
@@ -78,6 +85,7 @@ export default function TranslateForm() {
         variant='input'
         disabled={isSubmitting}
         className='md:col-start-1'
+        onKeyDown={handleKeyDown}
         {...register("text")}
       />
       <div className='md:col-start-1 md:row-start-2'>
@@ -95,13 +103,19 @@ export default function TranslateForm() {
         value={result}
         className='md:col-start-2'
       />
-      <button
-        type='submit'
-        className='btn btn-primary md:col-start-2 md:row-start-2'
-        disabled={isSubmitting}
-      >
-        {isSubmitting ? "Menerjemahkan..." : "Terjemahkan"} <BsTranslate />
-      </button>
+      <div className='md:col-start-2 md:row-start-2 w-full'>
+        <button
+          type='submit'
+          className='btn btn-primary w-full'
+          disabled={isSubmitting}
+        >
+          {isSubmitting ? "Menerjemahkan..." : "Terjemahkan"} <BsTranslate />
+        </button>
+        <div className='flex justify-center mt-4 gap-2'>
+          <p className='text-sm text-gray-500'>Atau tekan</p>
+          <kbd className='kbd kbd-sm w-fit'>Ctrl + Enter</kbd>
+        </div>
+      </div>
       <div className='flex justify-center mt-2 md:col-start-2'>
         <ErrorInputMessage message={errors.root?.serverError?.message} />
       </div>
