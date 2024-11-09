@@ -79,7 +79,7 @@ export default function GuessQuestion({ index, isFinished, handleNextQuestion, g
           <p className='font-semibold'>{message}</p>
           <p className='italic mt-4'>{question.answer}</p>
           <hr className='my-2' />
-          <p className='italic mb-4'>{question.translation}</p>
+          <p className='italic mb-4'>{question.translation ?? "-"}</p>
           {isFinished ? (
             <Link
               className='btn btn-accent btn-wide'
