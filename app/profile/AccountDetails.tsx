@@ -4,22 +4,18 @@ import { useUser } from "@/contexts/UserContext";
 export function AccountDetails() {
   const { user } = useUser();
 
-  if (!user) {
-    return null;
-  }
-
   return (
     <>
       <DetailRow
-        label='Type account'
-        value='Free'
+        label='Tipe akun'
+        value='Standar'
       />
       <DetailRow
-        label='Email verified'
-        value={user?.is_verified ? "Yes" : "No"}
+        label='Email terverifikasi'
+        value={user?.is_verified ? "Ya" : "Tidak"}
       />
       <DetailRow
-        label='Joined'
+        label='Bergabung'
         value={new Date(user?.created_at ?? "").toLocaleString()}
       />
     </>

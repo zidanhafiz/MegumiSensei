@@ -5,6 +5,7 @@ import Image from "next/image";
 import { logout } from "@/actions/authentication";
 import { useUser } from "@/contexts/UserContext";
 import { useRouter } from "next/navigation";
+import { FaCoins } from "react-icons/fa6";
 
 export default function UserDropdown() {
   const { user, setUser, userLoading } = useUser();
@@ -37,23 +38,29 @@ export default function UserDropdown() {
   if (user) {
     return (
       <div className='dropdown dropdown-end'>
-        <div
-          tabIndex={0}
-          role='button'
-          className='btn btn-ghost btn-circle avatar'
-        >
-          {user.avatar_url ? (
+        <div className='flex items-center w-full gap-2'>
+          <div className='md:flex items-center gap-2 hidden'>
+            <FaCoins className='text-secondary' size={16} />
+            <span className='font-semibold leading-none'>{user.credits}</span>
+          </div>
+          <div
+            tabIndex={0}
+            role='button'
+            className='btn btn-ghost btn-circle avatar'
+          >
             <div className='w-10 rounded-full'>
-              <Image
-                alt='AV'
-                src={user.avatar_url}
-                width={40}
-                height={40}
-              />
+              {user.avatar_url ? (
+                <Image
+                  alt='AV'
+                  src={user.avatar_url}
+                  width={40}
+                  height={40}
+                />
+              ) : (
+                <FaUserCircle className='w-10 h-10' />
+              )}
             </div>
-          ) : (
-            <FaUserCircle className='w-10 h-10' />
-          )}
+          </div>
         </div>
         <ul
           tabIndex={0}

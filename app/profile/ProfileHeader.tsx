@@ -14,10 +14,6 @@ export function ProfileHeader() {
 
   const router = useRouter();
 
-  if (!user) {
-    return null;
-  }
-
   const handleLogout = async () => {
     setIsLoading(true);
 
@@ -35,7 +31,7 @@ export function ProfileHeader() {
 
   return (
     <div className='flex items-center gap-4 my-4 w-full justify-between'>
-      {user.avatar_url ? (
+      {user?.avatar_url ? (
         <div className='md:w-20 md:h-20 w-12 h-12 rounded-full overflow-hidden'>
           <Image
             src={user.avatar_url}
