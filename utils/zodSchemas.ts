@@ -81,3 +81,11 @@ export const resetPasswordSchema = z
   });
 
 export type ResetPasswordFormData = z.infer<typeof resetPasswordSchema>;
+
+export const buyCreditsSchema = z.object({
+  sku: z.string().min(1, { message: "SKU is required" }).max(100, { message: "SKU must be at most 100 characters" }),
+  id: z.string().min(1, { message: "ID is required" }),
+  userId: z.string().min(1, { message: "User ID is required" }),
+});
+
+export type BuyCreditsFormData = z.infer<typeof buyCreditsSchema>;

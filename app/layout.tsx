@@ -3,6 +3,7 @@ import "./globals.css";
 import Header from "@/components/Header";
 import { quicksand } from "@/utils/fonts";
 import UserProvider from "@/contexts/UserContext";
+import Footer from "@/components/Footer";
 
 export const metadata: Metadata = {
   title: "Megumi Sensei",
@@ -19,11 +20,12 @@ export default function RootLayout({
       data-theme='bumblebee'
       lang='id'
     >
-      <body className={`${quicksand.className} antialiased p-6 min-h-screen bg-gradient-to-br from-white via-white to-secondary/10`}>
+      <body className={`${quicksand.className} antialiased p-6 min-h-screen bg-gradient-to-br from-white via-white to-secondary/10 flex flex-col`}>
         <UserProvider>
           <Header />
-          {children}
+          <div className='w-full'>{children}</div>
         </UserProvider>
+        <Footer />
       </body>
     </html>
   );

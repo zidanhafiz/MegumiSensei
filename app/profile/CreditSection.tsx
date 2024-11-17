@@ -9,21 +9,21 @@ export function CreditSection() {
   return (
     <>
       <div className='flex items-center justify-between'>
-        <p className='text-lg font-bold'>Current Credit</p>
+        <p className='text-lg font-bold'>Kredit Saat Ini</p>
         <p className='text-2xl font-bold'>{user?.credits ?? 0}</p>
       </div>
       <p className='text-xs text-gray-500'>
-        Credit are used for each feature usage.
+        Kredit digunakan untuk setiap penggunaan
         <br />
-        Each user starts with 100 credits.
+        Setiap user memiliki 100 kredit awal.
         <br />
-        Each feature usage consumes 1 credit.
+        Setiap penggunaan layanan membutuhkan 1 kredit.
       </p>
       <Link
-        href='/profile/billing'
+        href='/profile/buy-credits'
         className='btn btn-primary w-full'
       >
-        Add Credit
+        Tambah Kredit
         <FaCreditCard />
       </Link>
     </>
