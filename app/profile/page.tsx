@@ -6,7 +6,7 @@ import { FaUserCircle } from "react-icons/fa";
 
 export default async function ProfilePage() {
   return (
-    <div className='max-w-[600px] mx-auto'>
+    <div className='max-w-[600px] mx-auto w-full'>
       <PageContainer
         title='Profile'
         icon={<FaUserCircle />}

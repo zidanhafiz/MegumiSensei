@@ -34,6 +34,30 @@ export type Database = {
   }
   public: {
     Tables: {
+      credits: {
+        Row: {
+          amount: number
+          created_at: string
+          id: number
+          price: number
+          sku: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          id?: number
+          price: number
+          sku: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          id?: number
+          price?: number
+          sku?: string
+        }
+        Relationships: []
+      }
       game_sessions: {
         Row: {
           created_at: string
@@ -99,6 +123,60 @@ export type Database = {
           user_answer?: string | null
         }
         Relationships: []
+      }
+      transactions: {
+        Row: {
+          amount: number | null
+          created_at: string
+          id: string
+          mt_transaction_id: string | null
+          payment_channel: string | null
+          payment_method: string | null
+          product_id: number
+          status: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          amount?: number | null
+          created_at?: string
+          id: string
+          mt_transaction_id?: string | null
+          payment_channel?: string | null
+          payment_method?: string | null
+          product_id: number
+          status: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Update: {
+          amount?: number | null
+          created_at?: string
+          id?: string
+          mt_transaction_id?: string | null
+          payment_channel?: string | null
+          payment_method?: string | null
+          product_id?: number
+          status?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "transactions_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "credits"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transactions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["user_id"]
+          },
+        ]
       }
       users: {
         Row: {

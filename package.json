@@ -12,6 +12,7 @@
     "@hookform/resolvers": "^3.9.0",
     "@supabase/ssr": "^0.5.1",
     "@supabase/supabase-js": "^2.46.1",
+    "midtrans-client": "^1.4.2",
     "next": "15.0.1",
     "openai": "^4.68.4",
     "react": "19.0.0-rc-69d4b800-20241021",
