@@ -4,7 +4,7 @@ import z, { ZodError } from "zod";
 import { deductUserCredits } from "./profile";
 
 const translateTextSchema = z.object({
-  content: z.string().min(3, { message: "Minimal 3 huruf" }).max(1000, { message: "Maksimal 1000 huruf" }),
+  content: z.string().min(1, { message: "Minimal 1 huruf" }).max(1000, { message: "Maksimal 1000 huruf" }),
   from: z.string().min(3, { message: "Minimal 3 huruf" }).max(100, { message: "Maksimal 100 huruf" }).trim(),
   to: z.string().min(3, { message: "Minimal 3 huruf" }).max(100, { message: "Maksimal 100 huruf" }).trim(),
 });
