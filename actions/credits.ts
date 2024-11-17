@@ -1,7 +1,10 @@
 "use server";
 import { createClient } from "@/utils/supabase/server";
 import { buyCreditsSchema } from "@/utils/zodSchemas";
-import Xendit from "xendit-node";
+import { randomUUID } from "crypto";
+
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const midtransClient = require("midtrans-client");
 
 export const buyCredits = async (formData: FormData) => {
   const { sku, id, userId } = buyCreditsSchema.parse({
@@ -22,55 +25,72 @@ export const buyCredits = async (formData: FormData) => {
       throw new Error("SKU tidak valid");
     }
 
-    const { data: session, error: sessionError } = await supabase.auth.getUser();
+    const {
+      data: { user: userSession },
+      error: userSessionError,
+    } = await supabase.auth.getUser();
 
-    if (sessionError) {
-      throw new Error(sessionError.message);
+    if (userSessionError) {
+      throw new Error(userSessionError.message);
     }
 
-    if (!session.user) {
+    if (!userSession) {
       throw new Error("User tidak ditemukan");
     }
 
-    if (userId !== session.user.id) {
+    if (userId !== userSession.id) {
       throw new Error("User tidak valid");
     }
 
-    const { email } = session.user;
+    const [firstName, ...lastName] = userSession.user_metadata?.full_name?.split(" ") ?? [];
 
-    const xendit = new Xendit({
-      secretKey: process.env.XENDIT_SECRET_KEY!,
+    const snap = new midtransClient.Snap({
+      isProduction: false,
+      serverKey: process.env.MIDTRANS_SERVER_KEY!,
+      clientKey: process.env.NEXT_PUBLIC_MIDTRANS_CLIENT_KEY!,
     });
 
-    const response = await xendit.Invoice.createInvoice({
-      data: {
-        amount: data.price,
-        currency: "IDR",
-        externalId: `credits-${data.id}-user-${userId}`,
-        shouldSendEmail: email ? true : false,
-        payerEmail: email,
-        description: `Pembelian kredit ${data.sku} untuk ${email}`,
-        customer: {
-          customerId: userId,
-          email: email,
-        },
-        items: [
-          {
-            name: data.sku,
-            price: data.price,
-            quantity: 1,
-            referenceId: data.id.toString(),
-            category: "CREDITS",
-          },
-        ],
-        successRedirectUrl: `${process.env.NEXT_PUBLIC_APP_URL}/profile`,
-        failureRedirectUrl: `${process.env.NEXT_PUBLIC_APP_URL}/profile/buy-credits/error`,
+    const orderId = randomUUID();
+
+    const parameter = {
+      transaction_details: {
+        order_id: orderId,
+        gross_amount: data.price,
       },
+      item_details: [
+        {
+          id: data.id,
+          price: data.price,
+          quantity: 1,
+          name: data.sku,
+        },
+      ],
+      customer_details: {
+        first_name: firstName ?? "",
+        last_name: lastName.join(" ") ?? "",
+        email: userSession.email,
+        phone: "",
+      },
+    };
+
+    const response = await snap.createTransaction(parameter);
+    const { token } = response;
+
+    const { error: transactionError } = await supabase.from("transactions").insert({
+      id: orderId,
+      user_id: userId,
+      product_id: data.id,
+      amount: data.price,
+      status: "created",
     });
+
+    if (transactionError) {
+      throw new Error(transactionError.message);
+    }
 
     return {
       success: true,
-      data: response.invoiceUrl,
+      data: token,
     };
   } catch (error) {
     console.error(error);

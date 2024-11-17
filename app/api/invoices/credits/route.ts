@@ -1,78 +1,83 @@
+import { getPaymentChannel } from "@/utils/credits";
 import { createClient } from "@/utils/supabase/server";
+import { revalidateTag } from "next/cache";
 import { NextRequest, NextResponse } from "next/server";
+
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const midtransClient = require("midtrans-client");
 
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const headers = req.headers;
 
-    // Need to return a response to avoid callback timeout
-    NextResponse.json({ status: 200 });
+    const apiClient = new midtransClient.Snap({
+      isProduction: false,
+      serverKey: process.env.MIDTRANS_SERVER_KEY,
+      clientKey: process.env.MIDTRANS_CLIENT_KEY,
+    });
 
-    if (body.status !== "PAID") {
-      return NextResponse.json({ status: 200 });
-    }
-
-    const callbackToken = headers.get("X-CALLBACK-TOKEN");
-    const callbackId = headers.get("webhook-id");
-
-    if (!callbackToken || !callbackId) {
-      return NextResponse.json({ status: 400 });
-    }
-
-    if (callbackToken !== process.env.XENDIT_CALLBACK_TOKEN) {
-      return NextResponse.json({ status: 401 });
-    }
+    const response = await apiClient.transaction.notification(body);
 
     const supabase = await createClient();
 
-    const { data: existingTransaction } = await supabase.from("transactions").select("*").eq("webhook_id", callbackId);
+    if (["deny", "cancel", "expire", "failure"].includes(response.transaction_status)) {
+      const { error: transactionError } = await supabase
+        .from("transactions")
+        .update({
+          status: response.transaction_status,
+          payment_method: response.payment_type,
+          payment_channel: getPaymentChannel(response),
+        })
+        .eq("id", response.order_id);
 
-    if (existingTransaction && existingTransaction.length > 0) {
-      console.log("Transaction already exists");
-      return NextResponse.json({ status: 200 });
+      if (transactionError) {
+        console.error(transactionError);
+      }
     }
 
-    const { data: user, error: userError } = await supabase.from("users").select("*").eq("email", body.payer_email).single();
+    if (["capture", "settlement"].includes(response.transaction_status)) {
+      const { data: transaction, error: transactionError } = await supabase
+        .from("transactions")
+        .update({
+          status: response.transaction_status,
+          payment_method: response.payment_type,
+          payment_channel: getPaymentChannel(response),
+          mt_transaction_id: response.transaction_id,
+        })
+        .eq("id", response.order_id)
+        .select()
+        .single();
 
-    if (userError || !user) {
-      console.error(userError);
-      return NextResponse.json({ status: 400 });
+      if (transactionError || !transaction) {
+        console.error(transactionError);
+        return NextResponse.json({ status: 400 });
+      }
+
+      const { data: credit, error: creditError } = await supabase.from("credits").select("*").eq("id", transaction.product_id).single();
+
+      if (creditError || !credit) {
+        console.error(creditError);
+        return NextResponse.json({ status: 400 });
+      }
+
+      const { data: userCredit, error: userCreditError } = await supabase.from("users").select("credits").eq("user_id", transaction.user_id).single();
+
+      if (userCreditError || !userCredit) {
+        console.error(userCreditError);
+        return NextResponse.json({ status: 400 });
+      }
+
+      const newCredits = userCredit.credits + credit.amount;
+
+      const { error: userUpdateError } = await supabase.from("users").update({ credits: newCredits }).eq("user_id", transaction.user_id);
+
+      if (userUpdateError) {
+        console.error(userUpdateError);
+        return NextResponse.json({ status: 400 });
+      }
     }
 
-    const productId = body.external_id.split("-")[1];
-
-    const { error } = await supabase.from("transactions").insert({
-      user_id: user.user_id,
-      product_id: parseInt(productId),
-      status: body.status,
-      amount: body.amount,
-      paid_amount: body.paid_amount,
-      payment_channel: body.payment_channel,
-      payment_method: body.payment_method,
-      webhook_id: callbackId,
-    });
-
-    if (error) {
-      console.error(error);
-      return NextResponse.json({ status: 500 });
-    }
-
-    const { data: product, error: productError } = await supabase.from("credits").select("*").eq("id", parseInt(productId)).single();
-
-    if (productError || !product) {
-      console.error(productError);
-      return NextResponse.json({ status: 400 });
-    }
-
-    const newCredits = user.credits + product.amount;
-
-    const { error: userUpdateError } = await supabase.from("users").update({ credits: newCredits }).eq("user_id", user.user_id);
-
-    if (userUpdateError) {
-      console.error(userUpdateError);
-      return NextResponse.json({ status: 500 });
-    }
+    revalidateTag("user");
 
     return NextResponse.json({ status: 200 });
   } catch (error) {

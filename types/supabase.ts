@@ -128,41 +128,38 @@ export type Database = {
         Row: {
           amount: number | null
           created_at: string
-          id: number
-          paid_amount: number | null
+          id: string
+          mt_transaction_id: string | null
           payment_channel: string | null
           payment_method: string | null
-          product_id: number | null
-          status: string | null
+          product_id: number
+          status: string
           updated_at: string | null
-          user_id: string | null
-          webhook_id: string | null
+          user_id: string
         }
         Insert: {
           amount?: number | null
           created_at?: string
-          id?: number
-          paid_amount?: number | null
+          id: string
+          mt_transaction_id?: string | null
           payment_channel?: string | null
           payment_method?: string | null
-          product_id?: number | null
-          status?: string | null
+          product_id: number
+          status: string
           updated_at?: string | null
-          user_id?: string | null
-          webhook_id?: string | null
+          user_id?: string
         }
         Update: {
           amount?: number | null
           created_at?: string
-          id?: number
-          paid_amount?: number | null
+          id?: string
+          mt_transaction_id?: string | null
           payment_channel?: string | null
           payment_method?: string | null
-          product_id?: number | null
-          status?: string | null
+          product_id?: number
+          status?: string
           updated_at?: string | null
-          user_id?: string | null
-          webhook_id?: string | null
+          user_id?: string
         }
         Relationships: [
           {

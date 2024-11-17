@@ -1,7 +1,7 @@
 "use client";
 import { Credit } from "@/types/tableTypes";
 import ProductCard from "./ProductCard";
-import { useTransition } from "react";
+import { useEffect, useTransition } from "react";
 import { useUser } from "@/contexts/UserContext";
 import { buyCredits } from "@/actions/credits";
 import { useRouter } from "next/navigation";
@@ -22,12 +22,31 @@ export default function ProductList({ credits }: { credits: Credit[] }) {
 
       if (!res.success || !res.data) {
         console.error(res.error);
+        router.push("/profile/error");
         return;
       }
 
-      router.push(res.data);
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      window.snap.pay(res.data);
     });
   };
+
+  useEffect(() => {
+    const midtransScriptUrl = process.env.NEXT_PUBLIC_MIDTRANS_URL!;
+
+    const scriptTag = document.createElement("script");
+    scriptTag.src = midtransScriptUrl;
+
+    const myMidtransClientKey = process.env.NEXT_PUBLIC_MIDTRANS_CLIENT_KEY!;
+    scriptTag.setAttribute("data-client-key", myMidtransClientKey);
+
+    document.body.appendChild(scriptTag);
+
+    return () => {
+      document.body.removeChild(scriptTag);
+    };
+  }, []);
 
   return (
     <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'>
